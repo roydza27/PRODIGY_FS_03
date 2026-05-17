@@ -1,14 +1,59 @@
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Separator } from "@/shared/components/ui/separator";
+
 export default function AdminSettingsPage() {
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center px-4">
-      <div className="w-full max-w-3xl rounded-[28px] border border-white/10 bg-[#111113] p-8 text-center shadow-2xl shadow-black/30">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-2xl border border-white/10 bg-white/5" />
-        <h1 className="text-3xl font-bold tracking-[-0.04em] text-white">
-          Admin Settings
-        </h1>
-        <p className="mt-3 text-sm leading-7 text-zinc-400">
-          Adjust store settings, permissions, and system options.
-        </p>
+    <div className="min-h-screen bg-[#111113]/95 px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-5xl space-y-6">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
+          <p className="mt-1 text-sm text-zinc-400">
+            Configure store preferences, permissions, and system controls.
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="border-white/10 bg-white/5 text-white">
+            <CardHeader>
+              <CardTitle>Store Preferences</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-zinc-300">
+              <div className="flex items-center justify-between">
+                <span>Maintenance Mode</span>
+                <Button variant="outline" className="rounded-xl border-white/10 bg-transparent hover:bg-white/5">
+                  Off
+                </Button>
+              </div>
+              <Separator className="bg-white/10" />
+              <div className="flex items-center justify-between">
+                <span>Checkout Enabled</span>
+                <Button variant="outline" className="rounded-xl border-white/10 bg-transparent hover:bg-white/5">
+                  On
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-white/10 bg-white/5 text-white">
+            <CardHeader>
+              <CardTitle>System Access</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-zinc-300">
+              <div className="flex items-center justify-between">
+                <span>Admin Roles</span>
+                <Button className="rounded-xl bg-red-500 hover:bg-red-600">Manage</Button>
+              </div>
+              <Separator className="bg-white/10" />
+              <div className="flex items-center justify-between">
+                <span>API Keys</span>
+                <Button variant="outline" className="rounded-xl border-white/10 bg-transparent hover:bg-white/5">
+                  View
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

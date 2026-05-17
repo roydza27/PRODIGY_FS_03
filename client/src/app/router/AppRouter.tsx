@@ -37,6 +37,11 @@ import AdminStaffPage from "@/features/admin/pages/AdminStaffPage";
 import AdminSupportPage from "@/features/admin/pages/AdminSupportPage";
 import RoleRoute from "./RoleRoute";
 
+import { ProductsPage, ProductDetailsPage } from "@/features/products";
+import { CheckoutPage } from "@/features/checkout";
+import { CartPage } from "@/features/cart"
+
+
 const AppRouter = () => {
   return (
     <BrowserRouter>
@@ -83,6 +88,11 @@ const AppRouter = () => {
             <Route path="/admin/support" element={<AdminSupportPage />} />
           </Route>
         </Route>
+
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products/:id" element={<ProductDetailsPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
       </Routes>
     </BrowserRouter>
   );
