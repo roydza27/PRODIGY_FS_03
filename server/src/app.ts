@@ -3,6 +3,7 @@ import cors from "cors";
 
 import authRoutes from "@/modules/auth/auth.routes";
 import employeeRoutes from "@/modules/employee/employee.routes";
+import productRoutes from "./modules/product/product.routes";
 
 import { errorHandler } from "@/middlewares/error.middleware";
 
@@ -25,6 +26,7 @@ app.get("/", (_req, res) => {
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/products", productRoutes);
 
 // MUST BE LAST
 app.use(errorHandler);
