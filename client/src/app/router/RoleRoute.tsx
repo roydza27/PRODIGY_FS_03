@@ -1,8 +1,12 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/app/providers/AuthProvider";
 
-export default function ProtectedRoute() {
-  const { isLoading, isAuthenticated } = useAuth();
+type RoleRouteProps = {
+  allowedRoles: Array<"user" | "admin">;
+};
+
+export default function RoleRoute({ allowedRoles }: RoleRouteProps) {
+  const { isLoading, isAuthenticated, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -14,6 +18,10 @@ export default function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/account" replace />;
   }
 
   return <Outlet />;

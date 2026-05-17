@@ -5,9 +5,9 @@ import { AppSidebar } from "@/shared/components/layout/app-sidebar";
 import { SiteHeader } from "@/shared/components/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
-import { userSidebarData } from "@/shared/constants/sidebar.constants";
+import { adminSidebarData } from "@/shared/constants/sidebar.constants";
 
-export default function DashboardLayout() {
+export default function AdminLayout() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
@@ -26,7 +26,7 @@ export default function DashboardLayout() {
       >
         <AppSidebar
           onLogout={handleLogout}
-          sidebarData={userSidebarData}
+          sidebarData={adminSidebarData}
           variant="inset"
         />
 

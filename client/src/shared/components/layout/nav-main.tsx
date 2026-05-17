@@ -1,23 +1,15 @@
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/ui/button";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/shared/components/ui/sidebar"
-import { CirclePlusIcon, MailIcon } from "lucide-react"
+} from "@/shared/components/ui/sidebar";
+import type { SidebarItem } from "@/shared/types/sidebar";
+import { CirclePlusIcon, MailIcon } from "lucide-react";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string
-    url: string
-    icon?: React.ReactNode
-    isActive?: boolean
-  }[]
-}) {
+export function NavMain({ items }: { items: SidebarItem[] }) {
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -27,32 +19,38 @@ export function NavMain({
               tooltip="New Project"
               className="min-w-8 bg-[#FAFAFA] text-[#09090B] duration-200 ease-linear hover:bg-[#FAFAFA]/90 hover:text-[#09090B] active:bg-[#FAFAFA]/90 active:text-[#09090B]"
             >
-              <CirclePlusIcon
-              />
+              <CirclePlusIcon className="size-4" />
               <span>New Project</span>
             </SidebarMenuButton>
+
             <Button
               size="icon"
               className="size-8 group-data-[collapsible=icon]:opacity-0"
               variant="outline"
             >
-              <MailIcon
-              />
+              <MailIcon className="size-4" />
               <span className="sr-only">Notifications</span>
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>
+
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} data-active={item.isActive}>
-                {item.icon}
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton tooltip={item.title} data-active={item.isActive} asChild>
+                  <a href={item.url}>
+                    <Icon className="size-4" />
+                    <span>{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

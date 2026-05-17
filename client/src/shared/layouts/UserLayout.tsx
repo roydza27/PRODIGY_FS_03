@@ -7,7 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { userSidebarData } from "@/shared/constants/sidebar.constants";
 
-export default function DashboardLayout() {
+export default function UserLayout() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");

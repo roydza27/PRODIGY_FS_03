@@ -2,12 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { getMe } from "@/features/auth/services/auth.service"
 
-type User = {
-  id: string
-  name: string
-  email: string
-  role: string
-}
+import type { User } from "@/shared/types/auth"
 
 type AuthContextType = {
   user: User | null
