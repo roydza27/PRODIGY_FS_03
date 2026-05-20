@@ -19,7 +19,8 @@ export default function UserLayout() {
       <SidebarProvider
         style={
           {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--sidebar-width": "calc(var(--spacing) * 80)",
+            "--sidebar-width-icon": "calc(var(--spacing) * 15)",
             "--header-height": "calc(var(--spacing) * 12)",
           } as React.CSSProperties
         }
