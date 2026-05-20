@@ -5,25 +5,27 @@ import CheckoutForm from "../components/CheckoutForm";
 import CheckoutSummary from "../components/CheckoutSummary";
 import type { CheckoutFormData } from "../types/checkout.types";
 import { orderService } from "../services/order.service";
+import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { items, clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (data: CheckoutFormData) => {
+  const handleSubmit = async (data: CheckoutFormData): Promise<void> => {
     try {
       setIsSubmitting(true);
 
-      const res = await orderService.createOrder(data);
+      await orderService.createOrder(data);
 
       await clearCart();
 
-      alert("Order placed successfully");
-      navigate("/account/orders"); // change later if you add /orders pages
-      return res;
+      toast.success("Order placed successfully");
+      navigate("/account/orders");
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to place order");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to place order"
+      );
     } finally {
       setIsSubmitting(false);
     }

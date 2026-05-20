@@ -14,7 +14,7 @@ const initialForm: CheckoutFormData = {
 };
 
 type Props = {
-  onSubmit: (data: CheckoutFormData) => void | Promise<void>;
+  onSubmit: (data: CheckoutFormData) => Promise<unknown>;
   disabled?: boolean;
 };
 
@@ -28,9 +28,9 @@ export default function CheckoutForm({ onSubmit, disabled }: Props) {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(form);
+    await onSubmit(form);
   };
 
   return (
