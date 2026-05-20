@@ -1,0 +1,1 @@
+export { default as shipmentRoutes } from "./shipment.routes";

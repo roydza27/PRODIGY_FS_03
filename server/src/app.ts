@@ -6,6 +6,8 @@ import employeeRoutes from "@/modules/employee/employee.routes";
 import productRoutes from "./modules/product/product.routes";
 import cartRoutes from "@/modules/cart/cart.routes";
 import orderRoutes from "./modules/orders/order.routes";
+import shipmentRoutes from "./modules/shipments/shipment.routes";
+import supportRoutes from "./modules/support/support.routes";
 
 import { errorHandler } from "@/middlewares/error.middleware";
 
@@ -31,6 +33,8 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/shipments", shipmentRoutes);
+app.use("/api/support", supportRoutes);
 
 // MUST BE LAST
 app.use(errorHandler);
