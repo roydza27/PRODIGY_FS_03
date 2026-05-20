@@ -1,51 +1,158 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import AdminPageShell from "../components/AdminPageShell";
+import AnalyticsStatCard from "../components/AnalyticsStatCard";
+import RevenueChart from "../components/RevenueChart";
+import { getAnalyticsDashboard, type AnalyticsDashboard } from "../services/analytics.service";
 
-const metrics = [
-  { label: "Conversion Rate", value: "4.8%" },
-  { label: "Avg. Order Value", value: "₹3,249" },
-  { label: "Returning Customers", value: "38%" },
-  { label: "Bounce Rate", value: "21%" },
-];
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatStatusLabel(value: string) {
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 export default function AdminAnalyticsPage() {
+  const [data, setData] = useState<AnalyticsDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      const stats = await getAnalyticsDashboard();
+      setData(stats);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load analytics");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
+
+  const orderStatusData = useMemo(
+    () =>
+      data?.orderStatusBreakdown.map((item) => ({
+        label: formatStatusLabel(item.label),
+        value: item.value,
+      })) || [],
+    [data]
+  );
+
+  const shipmentStatusData = useMemo(
+    () =>
+      data?.shipmentStatusBreakdown.map((item) => ({
+        label: formatStatusLabel(item.label),
+        value: item.value,
+      })) || [],
+    [data]
+  );
+
+  const supportStatusData = useMemo(
+    () =>
+      data?.supportStatusBreakdown.map((item) => ({
+        label: formatStatusLabel(item.label),
+        value: item.value,
+      })) || [],
+    [data]
+  );
+
   return (
     <AdminPageShell
       title="Analytics"
-      description="Track performance metrics, customer behavior, and store growth."
+      description="Track revenue, orders, customers, shipments, and support workload."
+      actions={
+        <button
+          onClick={loadAnalytics}
+          className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+        >
+          Refresh
+        </button>
+      }
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <Card key={metric.label} className="border-white/10 bg-white/5 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400">
-                {metric.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">{metric.value}</CardContent>
-          </Card>
-        ))}
+        <AnalyticsStatCard
+          label="Total Revenue"
+          value={loading ? "..." : formatCurrency(data?.totalRevenue || 0)}
+          description="All completed and placed order totals."
+        />
+        <AnalyticsStatCard
+          label="Total Orders"
+          value={loading ? "..." : data?.totalOrders || 0}
+          description="Orders created through checkout."
+        />
+        <AnalyticsStatCard
+          label="Total Customers"
+          value={loading ? "..." : data?.totalCustomers || 0}
+          description="Unique customer email addresses."
+        />
+        <AnalyticsStatCard
+          label="Low Stock Products"
+          value={loading ? "..." : data?.lowStockProducts || 0}
+          description="Products at 5 units or fewer."
+        />
       </div>
 
-      <Card className="border-white/10 bg-white/5 text-white">
-        <CardHeader>
-          <CardTitle>Performance Chart</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-80 items-end gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-            {[24, 48, 42, 60, 54, 72, 66, 80].map((height, index) => (
-              <div
-                key={index}
-                className="flex-1 rounded-t-xl bg-red-500/80"
-                style={{ height: `${height}%` }}
-              />
-            ))}
+      <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+        <RevenueChart
+          title="Revenue by Month"
+          data={data?.revenueByMonth || []}
+          emptyLabel="No revenue data available yet."
+        />
+
+        <div className="space-y-6">
+          <RevenueChart
+            title="Orders by Month"
+            data={data?.ordersByMonth || []}
+            emptyLabel="No orders data available yet."
+          />
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-white">
+            <h3 className="text-lg font-semibold">Operational Summary</h3>
+            <div className="mt-4 space-y-3 text-sm text-zinc-300">
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <span>Shipments</span>
+                <span>{loading ? "..." : data?.totalShipments || 0}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <span>Open Tickets</span>
+                <span>{loading ? "..." : data?.openTickets || 0}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <span>Products</span>
+                <span>{loading ? "..." : data?.totalProducts || 0}</span>
+              </div>
+            </div>
           </div>
-          <p className="mt-3 text-sm text-zinc-400">
-            Placeholder analytics view for sales and engagement trends.
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <RevenueChart
+          title="Order Status Breakdown"
+          data={orderStatusData}
+          emptyLabel="No order status data available."
+        />
+        <RevenueChart
+          title="Shipment Status Breakdown"
+          data={shipmentStatusData}
+          emptyLabel="No shipment status data available."
+        />
+        <RevenueChart
+          title="Support Status Breakdown"
+          data={supportStatusData}
+          emptyLabel="No support ticket data available."
+        />
+      </div>
     </AdminPageShell>
   );
 }

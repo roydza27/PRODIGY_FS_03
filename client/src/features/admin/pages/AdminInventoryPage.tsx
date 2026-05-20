@@ -1,49 +1,171 @@
-import { Badge } from "@/shared/components/ui/badge";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-
-const stockItems = [
-  { name: "Smart Watch", stock: 12, status: "Healthy" },
-  { name: "Keyboard", stock: 6, status: "Low Stock" },
-  { name: "Monitor", stock: 2, status: "Critical" },
-];
+import { Input } from "@/shared/components/ui/input";
+import AdminPageShell from "../components/AdminPageShell";
+import InventoryStats from "../components/InventoryStats";
+import InventoryTable from "../components/InventoryTable";
+import { adminProductService } from "../services/product.service";
+import type { Product } from "@/features/products/types/product.types";
 
 export default function AdminInventoryPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await adminProductService.getAll();
+      setProducts(res.items || []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load inventory");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    const q = search.toLowerCase().trim();
+
+    if (!q) return products;
+
+    return products.filter((product) => {
+      return (
+        product.name.toLowerCase().includes(q) ||
+        (product.category || "").toLowerCase().includes(q) ||
+        (product.brand || "").toLowerCase().includes(q)
+      );
+    });
+  }, [products, search]);
+
+  const stats = useMemo(() => {
+    const totalProducts = products.length;
+    const outOfStock = products.filter((product) => !product.stock || product.stock <= 0).length;
+    const lowStock = products.filter(
+      (product) => product.stock && product.stock > 0 && product.stock <= 5
+    ).length;
+    const healthyStock = totalProducts - lowStock - outOfStock;
+
+    return {
+      totalProducts,
+      outOfStock,
+      lowStock,
+      healthyStock,
+    };
+  }, [products]);
+
   return (
-    <div className="min-h-screen bg-[#111113]/95 px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Inventory</h1>
-            <p className="mt-1 text-sm text-zinc-400">
-              Track stock levels, low inventory alerts, and restock needs.
-            </p>
-          </div>
-          <Button className="rounded-xl bg-red-500 hover:bg-red-600">Restock</Button>
+    <AdminPageShell
+      title="Inventory"
+      description="Monitor stock levels, identify low inventory, and keep products ready to sell."
+      actions={
+        <Button
+          onClick={loadProducts}
+          className="rounded-xl bg-red-500 hover:bg-red-600"
+        >
+          Refresh
+        </Button>
+      }
+    >
+      <InventoryStats
+        totalProducts={stats.totalProducts}
+        healthyStock={stats.healthyStock}
+        lowStock={stats.lowStock}
+        outOfStock={stats.outOfStock}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="space-y-4">
+          <Card className="border-white/10 bg-white/5 text-white">
+            <CardHeader>
+              <CardTitle>Search Inventory</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by product, category, or brand..."
+                className="border-white/10 bg-black/20 text-white placeholder:text-zinc-500"
+              />
+            </CardContent>
+          </Card>
+
+          {loading ? (
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-zinc-400">
+              Loading inventory...
+            </div>
+          ) : (
+            <InventoryTable
+              products={filteredProducts}
+              onEdit={(product) => setSelectedProduct(product)}
+            />
+          )}
         </div>
 
-        <Card className="border-white/10 bg-white/5 text-white">
-          <CardHeader>
-            <CardTitle>Stock Levels</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {stockItems.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 p-4"
-              >
-                <div>
-                  <p className="font-medium">{item.name}</p>
-                  <p className="mt-1 text-sm text-zinc-400">Stock: {item.stock}</p>
-                </div>
-                <Badge className="bg-zinc-800 text-zinc-100 hover:bg-zinc-800">
-                  {item.status}
-                </Badge>
+        <div className="space-y-4">
+          <Card className="border-white/10 bg-white/5 text-white">
+            <CardHeader>
+              <CardTitle>Inventory Health</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-zinc-300">
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <span>Healthy stock</span>
+                <span className="text-emerald-400">{stats.healthyStock}</span>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <span>Low stock</span>
+                <span className="text-amber-400">{stats.lowStock}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <span>Out of stock</span>
+                <span className="text-red-400">{stats.outOfStock}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {selectedProduct ? (
+            <Card className="border-white/10 bg-white/5 text-white">
+              <CardHeader>
+                <CardTitle>Selected Product</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-zinc-300">
+                <div>
+                  <p className="text-zinc-500">Name</p>
+                  <p>{selectedProduct.name}</p>
+                </div>
+                <div>
+                  <p className="text-zinc-500">Stock</p>
+                  <p>{selectedProduct.stock ?? 0}</p>
+                </div>
+                <div>
+                  <p className="text-zinc-500">Category</p>
+                  <p>{selectedProduct.category || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-zinc-500">Status</p>
+                  <p className="capitalize">{selectedProduct.status || "unknown"}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-white/10 bg-white/5 text-white">
+              <CardHeader>
+                <CardTitle>Quick Notes</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-zinc-400">
+                Select a product to inspect its stock details and current health.
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
-    </div>
+    </AdminPageShell>
   );
 }
