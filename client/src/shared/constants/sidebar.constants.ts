@@ -1,26 +1,33 @@
 import {
-  IconDashboard,
-  IconFolder,
-  IconChartBar,
-  IconReport,
-  IconUsers,
-  IconFileWord,
-  IconDatabase,
-  IconFileDescription,
-  IconSettings,
-  IconHelp,
-  IconSearch,
+  IconLayoutGrid,
   IconPackage,
+  IconDiscount2,
+  IconSparkles,
+  IconCategory,
+  IconTruck,
+  IconStar,
+  IconTag,
+  IconSearch,
+  IconUserCircle,
+  IconSettings,
+  IconReceipt2,
+  IconHeart,
+  IconHistory,
+  IconMessageCircle,
   IconShoppingCart,
+  IconUsers,
+  IconChartBar,
   IconClipboardList,
+  IconShieldCheck,
+  IconFileAnalytics,
   IconUserCog,
-  IconTruckDelivery,
 } from "@tabler/icons-react";
 
 import type { SidebarData } from "@/shared/types/sidebar";
 
 export const userSidebarData: SidebarData = {
   brandName: "LocalStore",
+
   user: {
     name: "John Doe",
     email: "john@example.com",
@@ -29,66 +36,108 @@ export const userSidebarData: SidebarData = {
 
   navMain: [
     {
-      title: "Dashboard",
-      url: "/account",
-      icon: IconDashboard,
-      isActive: true,
+      title: "Featured",
+      url: "/products",
+      icon: IconSparkles,
     },
     {
-      title: "Orders",
-      url: "/account/orders",
-      icon: IconFolder,
+      title: "Categories",
+      url: "/products",
+      icon: IconCategory,
     },
     {
-      title: "Wishlist",
-      url: "/account/wishlist",
-      icon: IconChartBar,
+      title: "Deals",
+      url: "/products?onSale=1",
+      icon: IconDiscount2,
     },
     {
-      title: "Reviews",
-      url: "/account/reviews",
-      icon: IconReport,
+      title: "Trending",
+      url: "/products?sort=price-desc",
+      icon: IconStar,
     },
     {
-      title: "Profile",
-      url: "/account/profile",
-      icon: IconUsers,
+      title: "All Products",
+      url: "/products",
+      icon: IconPackage,
     },
   ],
 
   documents: [
     {
-      name: "Invoices",
-      url: "/account/invoices",
-      icon: IconFileWord,
+      name: "New Arrivals",
+      url: "/products?sort=newest",
+      icon: IconLayoutGrid,
     },
     {
-      name: "Purchase History",
-      url: "/account/history",
-      icon: IconDatabase,
+      name: "Best Value",
+      url: "/products?price=budget",
+      icon: IconTag,
     },
     {
-      name: "Saved Items",
-      url: "/account/saved",
-      icon: IconFileDescription,
+      name: "Fast Delivery",
+      url: "/products?freeShipping=1",
+      icon: IconTruck,
     },
   ],
 
   navSecondary: [
     {
-      title: "Settings",
-      url: "/account/settings",
-      icon: IconSettings,
-    },
-    {
-      title: "Support",
-      url: "/support",
-      icon: IconHelp,
-    },
-    {
       title: "Search",
       url: "/search",
       icon: IconSearch,
+    },
+  ],
+
+  userMenu: [
+    {
+      label: "Account Dashboard",
+      url: "/account",
+      icon: IconLayoutGrid,
+    },
+    {
+      label: "Orders",
+      url: "/account/orders",
+      icon: IconShoppingCart,
+    },
+    {
+      label: "Wishlist",
+      url: "/account/wishlist",
+      icon: IconHeart,
+    },
+    {
+      label: "Reviews",
+      url: "/account/reviews",
+      icon: IconStar,
+    },
+    {
+      label: "Invoices",
+      url: "/account/invoices",
+      icon: IconReceipt2,
+    },
+    {
+      label: "Purchase History",
+      url: "/account/history",
+      icon: IconHistory,
+    },
+    {
+      label: "Saved Items",
+      url: "/account/saved",
+      icon: IconTag,
+    },
+    {
+      label: "Support",
+      url: "/support",
+      icon: IconMessageCircle,
+    },
+    {
+      label: "Profile",
+      url: "/account/profile",
+      icon: IconUserCircle,
+    },
+    {
+      label: "Settings",
+      url: "/account/settings",
+      icon: IconSettings,
     },
   ],
 };
@@ -106,8 +155,7 @@ export const adminSidebarData: SidebarData = {
     {
       title: "Dashboard",
       url: "/admin",
-      icon: IconDashboard,
-      isActive: true,
+      icon: IconLayoutGrid,
     },
     {
       title: "Products",
@@ -140,30 +188,83 @@ export const adminSidebarData: SidebarData = {
     {
       name: "Reports",
       url: "/admin/reports",
-      icon: IconReport,
+      icon: IconFileAnalytics,
     },
     {
       name: "Shipments",
       url: "/admin/shipments",
-      icon: IconTruckDelivery,
+      icon: IconTruck,
     },
   ],
 
   navSecondary: [
     {
-      title: "Admin Settings",
+      title: "Settings",
       url: "/admin/settings",
       icon: IconSettings,
     },
     {
-      title: "Manage Staff",
+      title: "Staff",
       url: "/admin/staff",
       icon: IconUserCog,
     },
     {
       title: "Support",
       url: "/admin/support",
-      icon: IconHelp,
+      icon: IconMessageCircle,
+    },
+  ],
+
+  userMenu: [
+    {
+      label: "Admin Dashboard",
+      url: "/admin",
+      icon: IconShieldCheck,
+    },
+    {
+      label: "Products",
+      url: "/admin/products",
+      icon: IconPackage,
+    },
+    {
+      label: "Orders",
+      url: "/admin/orders",
+      icon: IconShoppingCart,
+    },
+    {
+      label: "Customers",
+      url: "/admin/customers",
+      icon: IconUsers,
+    },
+    {
+      label: "Analytics",
+      url: "/admin/analytics",
+      icon: IconChartBar,
+    },
+    {
+      label: "Inventory",
+      url: "/admin/inventory",
+      icon: IconClipboardList,
+    },
+    {
+      label: "Shipments",
+      url: "/admin/shipments",
+      icon: IconTruck,
+    },
+    {
+      label: "Staff",
+      url: "/admin/staff",
+      icon: IconUserCog,
+    },
+    {
+      label: "Profile",
+      url: "/account/profile",
+      icon: IconUserCircle,
+    },
+    {
+      label: "Settings",
+      url: "/admin/settings",
+      icon: IconSettings,
     },
   ],
 };

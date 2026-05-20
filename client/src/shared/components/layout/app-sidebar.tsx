@@ -1,9 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  IconInnerShadowTop,
-} from "@tabler/icons-react";
+import { IconInnerShadowTop } from "@tabler/icons-react";
 
 import { NavDocuments } from "@/shared/components/layout/nav-documents";
 import { NavMain } from "@/shared/components/layout/nav-main";
@@ -30,7 +28,8 @@ export function AppSidebar({
   sidebarData,
   ...props
 }: AppSidebarProps) {
-  const { brandName, navMain, documents, navSecondary, user } = sidebarData;
+  const { brandName, navMain, documents, navSecondary, user, userMenu } =
+    sidebarData;
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -57,7 +56,7 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={user} onLogout={onLogout} />
+        <NavUser user={user} onLogout={onLogout} items={userMenu ?? []} />
       </SidebarFooter>
     </Sidebar>
   );
