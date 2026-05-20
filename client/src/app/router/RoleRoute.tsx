@@ -2,15 +2,15 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/app/providers/AuthProvider";
 
 type RoleRouteProps = {
-  allowedRoles: Array<"user" | "admin">;
+  allowedRoles: string[];
 };
 
 export default function RoleRoute({ allowedRoles }: RoleRouteProps) {
-  const { isLoading, isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+      <div className="min-h-screen bg-[#111113]/95 flex items-center justify-center text-white">
         Loading...
       </div>
     );

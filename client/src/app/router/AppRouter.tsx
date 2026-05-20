@@ -23,6 +23,7 @@ import AccountHistoryPage from "@/features/account/pages/AccountHistoryPage";
 import AccountSavedPage from "@/features/account/pages/AccountSavedPage";
 import SupportPage from "@/features/account/pages/SupportPage";
 import SearchPage from "@/features/account/pages/SearchPage";
+import AccountOrderDetailsPage from "@/features/account/pages/AccountOrderDetailsPage";
 
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage";
 import AdminProductsPage from "@/features/admin/pages/AdminProductsPage";
@@ -37,9 +38,12 @@ import AdminStaffPage from "@/features/admin/pages/AdminStaffPage";
 import AdminSupportPage from "@/features/admin/pages/AdminSupportPage";
 import RoleRoute from "./RoleRoute";
 
+import ShopSidebarLayout from "@/shared/layouts/ShopSidebarLayout";
+
 import { ProductsPage, ProductDetailsPage } from "@/features/products";
 import { CheckoutPage } from "@/features/checkout";
 import { CartPage } from "@/features/cart"
+
 
 
 const AppRouter = () => {
@@ -61,6 +65,7 @@ const AppRouter = () => {
           <Route element={<UserLayout />}>
             <Route path="/account" element={<AccountHomePage />} />
             <Route path="/account/orders" element={<AccountOrdersPage />} />
+            <Route path="/account/orders/:id" element={<AccountOrderDetailsPage />} />
             <Route path="/account/wishlist" element={<AccountWishlistPage />} />
             <Route path="/account/reviews" element={<AccountReviewsPage />} />
             <Route path="/account/profile" element={<AccountProfilePage />} />
@@ -89,10 +94,12 @@ const AppRouter = () => {
           </Route>
         </Route>
 
-        <Route path="/products" element={<ProductsPage />} />
-        <Route path="/products/:id" element={<ProductDetailsPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route element={<ShopSidebarLayout />}>
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/products/:id" element={<ProductDetailsPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
