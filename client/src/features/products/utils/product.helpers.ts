@@ -1,5 +1,8 @@
 import type { Product } from "../types/product.types";
 
+const FALLBACK_IMAGE =
+  "https://placehold.co/600x600/111113/ffffff?text=Product";
+
 export const formatPrice = (value: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",

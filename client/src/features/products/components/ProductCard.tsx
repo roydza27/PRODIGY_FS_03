@@ -19,10 +19,14 @@ export default function ProductCard({ product }: ProductCardProps) {
         <Link to={productUrl} className="block h-full w-full">
           {image ? (
             <img
-              src={image}
+              src={product.images?.[0] || "/placeholder-product.png"}
               alt={product.name}
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder-product.png";
+              }}
               className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
+
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-sm text-zinc-600">
               No image available

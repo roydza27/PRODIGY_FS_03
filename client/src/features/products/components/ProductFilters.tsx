@@ -1,11 +1,26 @@
-interface ProductFiltersProps {
+import ProductSearchBar from "./ProductSearchBar";
+import ProductSortSelect from "./ProductSortSelect";
+
+type SortValue = "newest" | "price-asc" | "price-desc" | "name-asc";
+
+type Props = {
   search: string;
   setSearch: (value: string) => void;
   category: string;
   setCategory: (value: string) => void;
-  sortBy: string;
-  setSortBy: (value: string) => void;
-}
+  sortBy: SortValue;
+  setSortBy: (value: SortValue) => void;
+};
+
+const categories = [
+  "All",
+  "electronics",
+  "fashion",
+  "home",
+  "beauty",
+  "sports",
+  "books",
+];
 
 export default function ProductFilters({
   search,
@@ -14,35 +29,27 @@ export default function ProductFilters({
   setCategory,
   sortBy,
   setSortBy,
-}: ProductFiltersProps) {
+}: Props) {
+  
   return (
-    <div className="grid gap-4 rounded-2xl border border-white/10 bg-[#111113]/95 p-4 md:grid-cols-3">
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search products..."
-        className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none placeholder:text-zinc-500"
-      />
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr_0.8fr]">
+        <ProductSearchBar value={search} onChange={setSearch} />
+        
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="h-12 rounded-xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
+        >
+          {categories.map((item) => (
+            <option key={item} value={item === "All" ? "" : item}>
+              {item}
+            </option>
+          ))}
+        </select>
 
-      <input
-        type="text"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        placeholder="Category"
-        className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none placeholder:text-zinc-500"
-      />
-
-      <select
-        value={sortBy}
-        onChange={(e) => setSortBy(e.target.value)}
-        className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
-      >
-        <option value="newest">Newest</option>
-        <option value="price-asc">Price: Low to High</option>
-        <option value="price-desc">Price: High to Low</option>
-        <option value="name-asc">Name: A to Z</option>
-      </select>
+        <ProductSortSelect value={sortBy} onChange={setSortBy} />
+      </div>
     </div>
   );
 }

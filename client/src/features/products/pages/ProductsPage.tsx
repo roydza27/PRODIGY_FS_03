@@ -1,14 +1,40 @@
-import { useMemo, useState } from "react";
-import ProductFilters from "../components/ProductFilters";
+import { useMemo } from "react";
+import { Search } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+
 import ProductGrid from "../components/ProductGrid";
+import ProductHero from "../components/ProductHero";
+import FeaturedProductsSection from "../components/FeaturedProductsSection";
+import TrendingProductsSection from "../components/TrendingProductsSection";
+import SaleProductsSection from "../components/SaleProductsSection";
+import NewArrivalsSection from "../components/NewArrivalsSection";
+import ProductSection from "../components/ProductSection";
 import { useProducts } from "../hooks/useProducts";
 import { getEffectivePrice } from "../utils/product.helpers";
+import { EmptyState, GridSkeleton, ErrorState } from "@/shared/components/page-state";
 
 export default function ProductsPage() {
   const { products, loading, error } = useProducts();
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const search = searchParams.get("q") || "";
+  const category = searchParams.get("category") || "";
+  const sortBy = searchParams.get("sort") || "newest";
+  const price = searchParams.get("price") || "";
+  const rating = searchParams.get("rating") || "";
+  const inStock = searchParams.get("inStock") === "1";
+  const onSale = searchParams.get("onSale") === "1";
+  const freeShipping = searchParams.get("freeShipping") === "1";
+
+  const hasActiveFilters =
+    search.length > 0 ||
+    category.length > 0 ||
+    sortBy !== "newest" ||
+    price.length > 0 ||
+    rating.length > 0 ||
+    inStock ||
+    onSale ||
+    freeShipping;
 
   const filteredProducts = useMemo(() => {
     const query = search.toLowerCase().trim();
@@ -23,7 +49,38 @@ export default function ProductsPage() {
       const matchesCategory =
         !cat || (product.category || "").toLowerCase().includes(cat);
 
-      return matchesSearch && matchesCategory;
+      const matchesInStock = !inStock || (product.stock ?? 0) > 0;
+
+      const matchesOnSale =
+        !onSale ||
+        (typeof product.compareAtPrice === "number" &&
+          product.compareAtPrice > product.price);
+
+      const matchesFreeShipping =
+        !freeShipping || Boolean((product as { freeShipping?: boolean }).freeShipping);
+
+      const matchesPrice =
+        !price ||
+        (price === "budget" && getEffectivePrice(product) < 2000) ||
+        (price === "mid" &&
+          getEffectivePrice(product) >= 2000 &&
+          getEffectivePrice(product) <= 5000) ||
+        (price === "premium" && getEffectivePrice(product) > 5000);
+
+      const matchesRating =
+        !rating ||
+        (rating === "4" && (product.rating || 0) >= 4) ||
+        (rating === "4.5" && (product.rating || 0) >= 4.5);
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesInStock &&
+        matchesOnSale &&
+        matchesFreeShipping &&
+        matchesPrice &&
+        matchesRating
+      );
     });
 
     result = [...result].sort((a, b) => {
@@ -34,43 +91,73 @@ export default function ProductsPage() {
     });
 
     return result;
-  }, [products, search, category, sortBy]);
+  }, [products, search, category, sortBy, price, rating, inStock, onSale, freeShipping]);
+
+  const clearFilters = () => {
+    setSearchParams({}, { replace: true });
+  };
 
   return (
-    <div className="min-h-screen bg-black px-4 py-10 text-white md:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Products</h1>
-          <p className="mt-2 text-zinc-400">
-            Browse all available products.
-          </p>
-        </div>
+    <div className="space-y-8">
+      <ProductHero
+        stats={{
+          products: products.length,
+          featured: products.filter((p) => p.isFeatured).length,
+          saleItems: products.filter(
+            (p) => typeof p.compareAtPrice === "number" && p.compareAtPrice > p.price
+          ).length,
+        }}
+      />
 
-        <div className="mb-6">
-          <ProductFilters
-            search={search}
-            setSearch={setSearch}
-            category={category}
-            setCategory={setCategory}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-          />
-        </div>
+      {loading ? (
+        <GridSkeleton rows={8} />
+      ) : error ? (
+        <ErrorState
+          error={error}
+          onAction={() => window.location.reload()}
+          actionLabel="Retry"
+        />
+      ) : (
+        <>
+          {!hasActiveFilters ? (
+            <>
+              <div id="featured">
+                <FeaturedProductsSection products={products} />
+              </div>
 
-        {loading && (
-          <div className="rounded-2xl border border-white/10 bg-[#111113]/95 p-8 text-center text-zinc-400">
-            Loading products...
-          </div>
-        )}
+              <TrendingProductsSection products={products} />
 
-        {error && !loading && (
-          <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center text-red-300">
-            {error}
-          </div>
-        )}
+              <SaleProductsSection products={products} />
 
-        {!loading && !error && <ProductGrid products={filteredProducts} />}
-      </div>
+              <NewArrivalsSection products={products} />
+            </>
+          ) : null}
+
+          <ProductSection
+            title={hasActiveFilters ? "Filtered results" : "Full catalog"}
+            description={
+              hasActiveFilters
+                ? "Showing products that match your current filters."
+                : "Browse the complete collection."
+            }
+            className="scroll-mt-24"
+          >
+            <div id="catalog">
+              {filteredProducts.length === 0 ? (
+                <EmptyState
+                  title="No products found"
+                  description="Try changing your filters."
+                  actionLabel="Clear filters"
+                  onAction={clearFilters}
+                  icon={<Search className="h-5 w-5" />}
+                />
+              ) : (
+                <ProductGrid products={filteredProducts} />
+              )}
+            </div>
+          </ProductSection>
+        </>
+      )}
     </div>
   );
 }
