@@ -1,51 +1,174 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
-import { Button } from "@/shared/components/ui/button";
+import { useMemo } from "react";
+import { Search } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
-const recentSearches = ["smart watch", "headphones", "keyboard", "monitor"];
+import { useProducts } from "@/features/products/hooks/useProducts";
+import { getEffectivePrice } from "@/features/products/utils/product.helpers";
+import { EmptyState, GridSkeleton, ErrorState } from "@/shared/components/page-state";
+
+import ProductGrid from "@/features/products/components/ProductGrid";
+import ProductHero from "@/features/products/components/ProductHero";
+import ProductSection from "@/features/products/components/ProductSection";
+import FeaturedProductsSection from "@/features/products//components/FeaturedProductsSection";
+import TrendingProductsSection from "@/features/products/components/TrendingProductsSection";
+import SaleProductsSection from "@/features/products//components/SaleProductsSection";
+import NewArrivalsSection from "@/features/products//components/NewArrivalsSection";
+import ShopFiltersPanel from "@/features/products//components/ShopFiltersPanel";
+import MobileFiltersBar from "@/features/products//components/MobileFiltersBar";
 
 export default function SearchPage() {
+  const { products, loading, error } = useProducts();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const search = searchParams.get("q") || "";
+  const category = searchParams.get("category") || "";
+  const sortBy = searchParams.get("sort") || "newest";
+  const price = searchParams.get("price") || "";
+  const rating = searchParams.get("rating") || "";
+  const inStock = searchParams.get("inStock") === "1";
+  const onSale = searchParams.get("onSale") === "1";
+  const freeShipping = searchParams.get("freeShipping") === "1";
+
+  const hasActiveFilters =
+    search.length > 0 ||
+    category.length > 0 ||
+    sortBy !== "newest" ||
+    price.length > 0 ||
+    rating.length > 0 ||
+    inStock ||
+    onSale ||
+    freeShipping;
+
+  const filteredProducts = useMemo(() => {
+    const query = search.toLowerCase().trim();
+    const cat = category.toLowerCase().trim();
+
+    let result = products.filter((product) => {
+      const matchesSearch =
+        !query ||
+        product.name.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query);
+
+      const matchesCategory =
+        !cat || (product.category || "").toLowerCase().includes(cat);
+
+      const matchesInStock = !inStock || (product.stock ?? 0) > 0;
+
+      const matchesOnSale =
+        !onSale ||
+        (typeof product.compareAtPrice === "number" &&
+          product.compareAtPrice > product.price);
+
+      const matchesFreeShipping =
+        !freeShipping ||
+        Boolean((product as { freeShipping?: boolean }).freeShipping);
+
+      const matchesPrice =
+        !price ||
+        (price === "budget" && getEffectivePrice(product) < 2000) ||
+        (price === "mid" &&
+          getEffectivePrice(product) >= 2000 &&
+          getEffectivePrice(product) <= 5000) ||
+        (price === "premium" && getEffectivePrice(product) > 5000);
+
+      const matchesRating =
+        !rating ||
+        (rating === "4" && (product.rating || 0) >= 4) ||
+        (rating === "4.5" && (product.rating || 0) >= 4.5);
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesInStock &&
+        matchesOnSale &&
+        matchesFreeShipping &&
+        matchesPrice &&
+        matchesRating
+      );
+    });
+
+    result = [...result].sort((a, b) => {
+      if (sortBy === "price-asc") return getEffectivePrice(a) - getEffectivePrice(b);
+      if (sortBy === "price-desc") return getEffectivePrice(b) - getEffectivePrice(a);
+      if (sortBy === "name-asc") return a.name.localeCompare(b.name);
+      return 0;
+    });
+
+    return result;
+  }, [products, search, category, sortBy, price, rating, inStock, onSale, freeShipping]);
+
+  const clearFilters = () => {
+    setSearchParams({}, { replace: true });
+  };
+
   return (
-    <div className="min-h-screen bg-[#111113]/95 px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Search</h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            Search products, orders, invoices, and saved items.
-          </p>
+    <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <aside className="hidden lg:block">
+        <ShopFiltersPanel />
+      </aside>
+
+      <div className="min-w-0 w-full space-y-6 sm:space-y-8">
+        <div className="lg:hidden">
+          <MobileFiltersBar />
         </div>
 
-        <Card className="border-white/10 bg-white/5 text-white">
-          <CardHeader>
-            <CardTitle>Search the store</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Input
-                placeholder="Search anything..."
-                className="border-white/10 bg-black/20 text-white"
-              />
-              <Button className="rounded-xl bg-red-500 hover:bg-red-600">
-                Search
-              </Button>
-            </div>
+        <ProductHero
+          stats={{
+            products: products.length,
+            featured: products.filter((p) => p.isFeatured).length,
+            saleItems: products.filter(
+              (p) => typeof p.compareAtPrice === "number" && p.compareAtPrice > p.price
+            ).length,
+          }}
+        />
 
-            <div className="space-y-2">
-              <p className="text-sm text-zinc-400">Recent searches</p>
-              <div className="flex flex-wrap gap-2">
-                {recentSearches.map((term) => (
-                  <Button
-                    key={term}
-                    variant="outline"
-                    className="rounded-full border-white/10 bg-transparent text-zinc-200 hover:bg-white/5"
-                  >
-                    {term}
-                  </Button>
-                ))}
+        {loading ? (
+          <GridSkeleton rows={8} />
+        ) : error ? (
+          <ErrorState
+            error={error}
+            onAction={() => window.location.reload()}
+            actionLabel="Retry"
+          />
+        ) : (
+          <>
+            {!hasActiveFilters ? (
+              <>
+                <div id="featured">
+                  <FeaturedProductsSection products={products} />
+                </div>
+
+                <TrendingProductsSection products={products} />
+                <SaleProductsSection products={products} />
+                <NewArrivalsSection products={products} />
+              </>
+            ) : null}
+
+            <ProductSection
+              title={hasActiveFilters ? "Filtered results" : "Full catalog"}
+              description={
+                hasActiveFilters
+                  ? "Showing products that match your current filters."
+                  : "Browse the complete collection."
+              }
+              className="scroll-mt-24"
+            >
+              <div id="catalog">
+                {filteredProducts.length === 0 ? (
+                  <EmptyState
+                    title="No products found"
+                    description="Try changing your filters."
+                    actionLabel="Clear filters"
+                    onAction={clearFilters}
+                    icon={<Search className="h-5 w-5" />}
+                  />
+                ) : (
+                  <ProductGrid products={filteredProducts} />
+                )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </ProductSection>
+          </>
+        )}
       </div>
     </div>
   );

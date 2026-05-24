@@ -8,7 +8,7 @@ export type OrderStatus =
 
 export type PaymentMethod = "cod" | "card";
 
-export interface OrderItemSnapshot {
+export interface OrderItem {
   productId: string;
   name: string;
   image?: string;
@@ -29,7 +29,7 @@ export interface ShippingAddress {
 
 export interface Order {
   _id: string;
-  items: OrderItemSnapshot[];
+  items: OrderItem[];
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
   status: OrderStatus;
