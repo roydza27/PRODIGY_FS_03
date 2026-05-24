@@ -1,29 +1,45 @@
+import * as React from "react";
 import { Outlet } from "react-router-dom";
 
+import { AppSidebar } from "@/shared/components/layout/app-sidebar";
+import { SiteHeader } from "@/shared/components/layout/site-header";
+import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
+import { userSidebarData } from "@/shared/constants/sidebar.constants";
+
 export default function ShopLayout() {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    window.location.replace("/login");
+  };
+
   return (
-    <div className="min-h-screen bg-[#111113]/95 text-white">
-      <header className="border-b border-white/10 bg-black/20">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div>
-            <p className="text-lg font-semibold tracking-tight">LocalStore</p>
-            <p className="text-xs text-zinc-500">Premium storefront</p>
-          </div>
+    <TooltipProvider delayDuration={0}>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--sidebar-width-icon": "77px",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar
+          onLogout={handleLogout}
+          sidebarData={userSidebarData}
+          variant="inset"
+        />
 
-          <div className="hidden items-center gap-2 sm:flex">
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
-              Fast delivery
-            </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
-              Secure checkout
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <Outlet />
-      </main>
-    </div>
+        <SidebarInset className="min-h-screen w-full min-w-0 rounded-none text-[#FAFAFA] md:rounded">
+          <SiteHeader />
+          <main className="flex min-h-[calc(100vh-var(--header-height))] flex-1 flex-col overflow-x-hidden">
+            <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
+              <Outlet />
+            </div>
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

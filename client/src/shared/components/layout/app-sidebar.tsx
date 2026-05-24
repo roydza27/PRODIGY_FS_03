@@ -1,12 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { IconInnerShadowTop, IconSparkles } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
+import {
+  IconInnerShadowTop,
+  IconSparkles,
+} from "@tabler/icons-react";
 
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";
 import { SidebarSection } from "@/shared/components/layout/sidebar-section";
 import { NavUser } from "@/shared/components/layout/nav-user";
+
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +20,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/shared/components/ui/sidebar";
+
 import type { SidebarData } from "@/shared/types/sidebar";
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
@@ -28,32 +33,38 @@ export function AppSidebar({
   sidebarData,
   ...props
 }: AppSidebarProps) {
-  const { brandName, navMain, documents, navSecondary, user, userMenu } =
-    sidebarData;
+  const {
+    brandName,
+    navMain,
+    documents,
+    navSecondary,
+    user,
+    userMenu,
+  } = sidebarData;
 
   return (
     <Sidebar
       collapsible="icon"
-      className="items-center"
       {...props}
     >
-      <SidebarHeader className="px-3 py-4">
+      <SidebarHeader className="border-b border-white/5 px-3 py-4">
         <SidebarMenu className="gap-2">
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
               tooltip={brandName}
-              className="h-12 rounded-2xl px-3 transition-all duration-200"
+              className="h-12 rounded-2xl px-3 transition-colors hover:bg-white/5"
             >
               <Link to="/products" className="flex items-center gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white/10 text-white ring-1 ring-white/10">
-                  <IconInnerShadowTop className="size-6" />
-                </span>
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-white/10">
+                  <IconInnerShadowTop className="size-5 text-white" />
+                </div>
 
                 <div className="min-w-0 group-data-[collapsible=icon]:hidden">
                   <p className="truncate text-sm font-semibold text-white">
                     {brandName}
                   </p>
+
                   <p className="truncate text-xs text-zinc-500">
                     Premium storefront
                   </p>
@@ -65,7 +76,7 @@ export function AppSidebar({
           <SidebarMenuItem className="group-data-[collapsible=icon]:hidden">
             <SidebarMenuButton
               asChild
-              className="h-11 rounded-2xl bg-white px-3 text-black transition hover:bg-white/90"
+              className="h-11 rounded-2xl bg-white px-3 text-black hover:bg-white/90"
             >
               <Link to="/products">
                 <IconSparkles className="size-5" />
@@ -76,7 +87,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-2">
+      <SidebarContent className="px-2 py-4">
         <SidebarSection title="Browse">
           {navMain.map((item) => (
             <SidebarNavItem
@@ -89,16 +100,18 @@ export function AppSidebar({
           ))}
         </SidebarSection>
 
-        <SidebarSection title="Collections">
-          {documents.map((item) => (
-            <SidebarNavItem
-              key={item.name}
-              to={item.url}
-              label={item.name}
-              icon={item.icon}
-            />
-          ))}
-        </SidebarSection>
+        {documents.length > 0 ? (
+          <SidebarSection title="Collections">
+            {documents.map((item) => (
+              <SidebarNavItem
+                key={item.name}
+                to={item.url}
+                label={item.name}
+                icon={item.icon}
+              />
+            ))}
+          </SidebarSection>
+        ) : null}
 
         <SidebarSection title="More">
           {navSecondary.map((item) => (
@@ -112,8 +125,12 @@ export function AppSidebar({
         </SidebarSection>
       </SidebarContent>
 
-      <SidebarFooter className="px-3 pb-3">
-        <NavUser user={user} onLogout={onLogout} items={userMenu ?? []} />
+      <SidebarFooter className="border-t border-white/5 p-3">
+        <NavUser
+          user={user}
+          onLogout={onLogout}
+          items={userMenu ?? []}
+        />
       </SidebarFooter>
     </Sidebar>
   );

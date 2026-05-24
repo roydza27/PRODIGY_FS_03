@@ -2,7 +2,6 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { EllipsisVertical, LogOut } from "lucide-react";
 
-import { useSidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/shared/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,85 +30,74 @@ type NavUserProps = {
 };
 
 export function NavUser({ user, onLogout, items = [] }: NavUserProps) {
-  const { isMobile } = useSidebar();
-
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-[#18181B] data-[state=open]:text-[#FAFAFA]"
-            >
-              <Avatar className="h-8 w-8 rounded-xl">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-xl">
-                  {user.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+<button
+  type="button"
+  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] transition-colors hover:bg-white/[0.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#DB4444]/60 data-[state=open]:bg-white/[0.06]"
+  aria-label="Open account menu"
+>
+  <Avatar className="h-full w-full rounded-full">
+    <AvatarImage src={user.avatar} alt={user.name} />
+    <AvatarFallback className="rounded-full bg-zinc-800 text-xs font-medium text-zinc-300">
+      {user.name.slice(0, 2).toUpperCase()}
+    </AvatarFallback>
+  </Avatar>
+</button>
+      </DropdownMenuTrigger>
 
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs text-[#A1A1AA]">
-                  {user.email}
-                </span>
-              </div>
+      <DropdownMenuContent
+        className="w-56 min-w-56 rounded-xl border-white/10 bg-[#111113] text-white"
+        side="bottom"
+        align="end"
+        sideOffset={8}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-xl">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback className="rounded-xl bg-white/10 text-white">
+                {user.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-              <EllipsisVertical className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{user.name}</span>
+              <span className="truncate text-xs text-[#A1A1AA]">
+                {user.email}
+              </span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
 
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-xl"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-xl">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-xl">
-                    {user.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+        <DropdownMenuSeparator className="bg-white/10" />
 
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-[#A1A1AA]">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          {items.map((item) => {
+            const Icon = item.icon;
 
-            <DropdownMenuSeparator />
+            return (
+              <DropdownMenuItem key={item.url} asChild className="focus:bg-white/10 focus:text-white cursor-pointer">
+                <Link to={item.url} className="flex items-center gap-2">
+                  <Icon className="size-4" />
+                  <span>{item.label}</span>
+                </Link>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuGroup>
 
-            <DropdownMenuGroup>
-              {items.map((item) => {
-                const Icon = item.icon;
+        <DropdownMenuSeparator className="bg-white/10" />
 
-                return (
-                  <DropdownMenuItem key={item.url} asChild>
-                    <Link to={item.url} className="flex items-center gap-2">
-                      <Icon className="size-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem onSelect={onLogout}>
-              <LogOut className="size-4" />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+        <DropdownMenuItem 
+          onSelect={onLogout} 
+          className="focus:bg-white/10 text-red-400 focus:text-red-300 cursor-pointer"
+        >
+          <LogOut className="size-4 mr-2" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

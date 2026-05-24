@@ -21,6 +21,8 @@ import {
   IconShieldCheck,
   IconFileAnalytics,
   IconUserCog,
+  IconCreditCard,
+  IconMapPin,
 } from "@tabler/icons-react";
 
 import type { SidebarData } from "@/shared/types/sidebar";
@@ -28,117 +30,45 @@ import type { SidebarData } from "@/shared/types/sidebar";
 export const userSidebarData: SidebarData = {
   brandName: "LocalStore",
 
+  // In a real app, this user object would be fetched from your auth provider
   user: {
     name: "John Doe",
     email: "john@example.com",
     avatar: "/avatars/john.jpg",
   },
 
+  // Primary Navigation
   navMain: [
-    {
-      title: "Featured",
-      url: "/products",
-      icon: IconSparkles,
-    },
-    {
-      title: "Categories",
-      url: "/products",
-      icon: IconCategory,
-    },
-    {
-      title: "Deals",
-      url: "/products?onSale=1",
-      icon: IconDiscount2,
-    },
-    {
-      title: "Trending",
-      url: "/products?sort=price-desc",
-      icon: IconStar,
-    },
-    {
-      title: "All Products",
-      url: "/products",
-      icon: IconPackage,
-    },
+    { title: "Featured", url: "/products", icon: IconSparkles },
+    { title: "Categories", url: "/products?view=categories", icon: IconCategory },
+    { title: "Trending", url: "/products?sort=trending", icon: IconStar },
+    { title: "Sale", url: "/products?onSale=1", icon: IconDiscount2 },
+    { title: "Shop All", url: "/products", icon: IconPackage },
   ],
 
+  // Curated Collections (mapped as 'documents' in your types)
   documents: [
-    {
-      name: "New Arrivals",
-      url: "/products?sort=newest",
-      icon: IconLayoutGrid,
-    },
-    {
-      name: "Best Value",
-      url: "/products?price=budget",
-      icon: IconTag,
-    },
-    {
-      name: "Fast Delivery",
-      url: "/products?freeShipping=1",
-      icon: IconTruck,
-    },
+    { name: "New Arrivals", url: "/products?sort=newest", icon: IconLayoutGrid },
+    { name: "Everyday Essentials", url: "/products?collection=essentials", icon: IconTag },
+    { name: "Ready to Ship", url: "/products?freeShipping=1", icon: IconTruck },
   ],
 
+  // Utility / Secondary
   navSecondary: [
-    {
-      title: "Search",
-      url: "/search",
-      icon: IconSearch,
-    },
+    { title: "Search", url: "/search", icon: IconSearch },
+    { title: "Help & Support", url: "/support", icon: IconMessageCircle },
   ],
 
+  // User Dropdown / Account Menu
   userMenu: [
-    {
-      label: "Account Dashboard",
-      url: "/account",
-      icon: IconLayoutGrid,
-    },
-    {
-      label: "Orders",
-      url: "/account/orders",
-      icon: IconShoppingCart,
-    },
-    {
-      label: "Wishlist",
-      url: "/account/wishlist",
-      icon: IconHeart,
-    },
-    {
-      label: "Reviews",
-      url: "/account/reviews",
-      icon: IconStar,
-    },
-    {
-      label: "Invoices",
-      url: "/account/invoices",
-      icon: IconReceipt2,
-    },
-    {
-      label: "Purchase History",
-      url: "/account/history",
-      icon: IconHistory,
-    },
-    {
-      label: "Saved Items",
-      url: "/account/saved",
-      icon: IconTag,
-    },
-    {
-      label: "Support",
-      url: "/support",
-      icon: IconMessageCircle,
-    },
-    {
-      label: "Profile",
-      url: "/account/profile",
-      icon: IconUserCircle,
-    },
-    {
-      label: "Settings",
-      url: "/account/settings",
-      icon: IconSettings,
-    },
+    { label: "Dashboard", url: "/account", icon: IconLayoutGrid },
+    { label: "Order History", url: "/account/orders", icon: IconHistory },
+    { label: "Wishlist", url: "/account/wishlist", icon: IconHeart },
+    { label: "Saved Addresses", url: "/account/addresses", icon: IconMapPin },
+    { label: "Payment Methods", url: "/account/billing", icon: IconCreditCard },
+    { label: "Invoices", url: "/account/invoices", icon: IconReceipt2 },
+    { label: "Profile", url: "/account/profile", icon: IconUserCircle },
+    { label: "Settings", url: "/account/settings", icon: IconSettings },
   ],
 };
 
@@ -268,3 +198,4 @@ export const adminSidebarData: SidebarData = {
     },
   ],
 };
+
