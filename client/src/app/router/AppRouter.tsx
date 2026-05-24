@@ -38,7 +38,7 @@ import AdminStaffPage from "@/features/admin/pages/AdminStaffPage";
 import AdminSupportPage from "@/features/admin/pages/AdminSupportPage";
 import RoleRoute from "./RoleRoute";
 
-import ShopSidebarLayout from "@/shared/layouts/ShopSidebarLayout";
+import ShopLayout from "@/shared/layouts/ShopLayout";
 
 import { ProductsPage, ProductDetailsPage } from "@/features/products";
 import { CheckoutPage } from "@/features/checkout";
@@ -62,7 +62,7 @@ const AppRouter = () => {
         </Route>
 
         <Route element={<ProtectedRoute />}>
-          <Route element={<UserLayout />}>
+          <Route element={<PublicLayout />}>
             <Route path="/account" element={<AccountHomePage />} />
             <Route path="/account/orders" element={<AccountOrdersPage />} />
             <Route path="/account/orders/:id" element={<AccountOrderDetailsPage />} />
@@ -94,7 +94,7 @@ const AppRouter = () => {
           </Route>
         </Route>
 
-        <Route element={<ShopSidebarLayout />}>
+        <Route element={<PublicLayout />}>
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductDetailsPage />} />
           <Route path="/cart" element={<CartPage />} />
