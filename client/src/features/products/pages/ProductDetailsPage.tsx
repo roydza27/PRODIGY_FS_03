@@ -13,6 +13,10 @@ import ProductOptions from "../components/ProductOptions";
 import ProductActions from "../components/ProductActions";
 import ProductDeliveryInfo from "../components/ProductDeliveryInfo";
 import RelatedProducts from "../components/RelatedProducts";
+import ProductHighlights from "@/features/products/components/ProductHighlights";
+import ProductSpecifications from "@/features/products/components/ProductSpecifications";
+import ProductReviews from "@/features/products/components/ProductReviews";
+import ProductFAQ from "@/features/products/components/ProductFAQ";
 
 const SIZES = ["XS", "S", "M", "L", "XL"];
 
@@ -35,7 +39,6 @@ export default function ProductDetailsPage() {
   const [selectedColor, setSelectedColor] = useState("red");
   const [cartLoading, setCartLoading] = useState(false);
 
-  /* ── Derived data ── */
   const images = useMemo(() => {
     if (!product) return [];
     const base = product.images?.filter(Boolean) ?? [];
@@ -53,6 +56,7 @@ export default function ProductDetailsPage() {
           p.category?.toLowerCase() === product.category?.toLowerCase()
       )
       .slice(0, 4);
+
     return sameCategory.length
       ? sameCategory
       : products.filter((p) => p._id !== product._id).slice(0, 4);
@@ -67,7 +71,6 @@ export default function ProductDetailsPage() {
     { label: product?.name ?? "…" },
   ];
 
-  /* ── Handlers ── */
   const handleAddToCart = async () => {
     if (!product) return;
     setCartLoading(true);
@@ -83,25 +86,27 @@ export default function ProductDetailsPage() {
 
   const handleBuyNow = () => {
     toast.info("Redirecting to checkout…");
-    // navigate("/checkout") — wire up when ready
   };
 
-  /* ── States ── */
   if (loading) {
     return (
       <div className="min-h-screen bg-[#111113] px-4 py-10 text-white md:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          {/* Skeleton shimmer */}
           <div className="grid gap-8 xl:grid-cols-2">
             <div className="aspect-square animate-pulse rounded-3xl bg-white/5" />
-            <div className="flex flex-col gap-4 rounded-3xl bg-white/5 p-8 animate-pulse">
-              {[40, 28, 20, 16, 16].map((h, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg bg-white/8"
-                  style={{ height: h, width: i === 0 ? "70%" : i === 2 ? "40%" : "90%" }}
-                />
-              ))}
+            <div className="animate-pulse rounded-3xl bg-white/5 p-8">
+              <div className="flex flex-col gap-4">
+                {[40, 28, 20, 16, 16].map((h, i) => (
+                  <div
+                    key={i}
+                    className="rounded-lg bg-white/8"
+                    style={{
+                      height: h,
+                      width: i === 0 ? "70%" : i === 2 ? "40%" : "90%",
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -129,18 +134,12 @@ export default function ProductDetailsPage() {
   return (
     <div className="min-h-screen bg-[#111113] text-white">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-
         <ProductBreadcrumb crumbs={breadcrumbs} />
 
-        {/* Main grid */}
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] xl:gap-12">
-
-          {/* LEFT — Gallery */}
           <ProductImageGallery images={images} productName={product.name} />
 
-          {/* RIGHT — Info panel */}
           <div className="flex flex-col gap-6 rounded-3xl border border-white/8 bg-white/[0.025] p-6 sm:p-7 lg:p-9">
-
             <ProductInfo
               name={product.name}
               category={product.category}
@@ -173,9 +172,25 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
-        {/* Related products */}
-        <RelatedProducts products={relatedItems} formatPrice={formatPrice} />
+        <div className="mt-8 space-y-8 lg:mt-10 lg:space-y-10">
 
+          <ProductSpecifications
+            specs={[
+              { label: "Material", value: "Premium alloy and reinforced polymer" },
+              { label: "Dimensions", value: "41mm x 36mm x 10mm" },
+              { label: "Weight", value: "48g" },
+              { label: "Compatibility", value: "Android, iOS" },
+              { label: "Warranty", value: "1 year manufacturer warranty" },
+              { label: "Care", value: "Wipe with dry soft cloth" },
+            ]}
+          />
+
+          <ProductReviews averageRating={4.5} reviewCount={128} />
+
+          <ProductFAQ />
+
+          <RelatedProducts products={relatedItems} formatPrice={formatPrice} />
+        </div>
       </main>
     </div>
   );
