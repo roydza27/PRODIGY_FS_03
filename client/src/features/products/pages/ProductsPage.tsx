@@ -12,6 +12,8 @@ import ProductSection from "../components/ProductSection";
 import { useProducts } from "../hooks/useProducts";
 import { getEffectivePrice } from "../utils/product.helpers";
 import { EmptyState, GridSkeleton, ErrorState } from "@/shared/components/page-state";
+import ShopFiltersPanel from "../components/ShopFiltersPanel";
+import MobileFiltersBar from "../components/MobileFiltersBar";
 
 export default function ProductsPage() {
   const { products, loading, error } = useProducts();
@@ -97,8 +99,17 @@ export default function ProductsPage() {
     setSearchParams({}, { replace: true });
   };
 
-  return (
-    <div className="space-y-8">
+return (
+  <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <aside className="hidden lg:block">
+      <ShopFiltersPanel />
+    </aside>
+
+    <div className="min-w-0 w-full space-y-6 sm:space-y-8">
+      <div className="lg:hidden">
+        <MobileFiltersBar />
+      </div>
+
       <ProductHero
         stats={{
           products: products.length,
@@ -109,55 +120,58 @@ export default function ProductsPage() {
         }}
       />
 
-      {loading ? (
-        <GridSkeleton rows={8} />
-      ) : error ? (
-        <ErrorState
-          error={error}
-          onAction={() => window.location.reload()}
-          actionLabel="Retry"
-        />
-      ) : (
-        <>
-          {!hasActiveFilters ? (
-            <>
-              <div id="featured">
-                <FeaturedProductsSection products={products} />
-              </div>
-
-              <TrendingProductsSection products={products} />
-
-              <SaleProductsSection products={products} />
-
-              <NewArrivalsSection products={products} />
-            </>
-          ) : null}
-
-          <ProductSection
-            title={hasActiveFilters ? "Filtered results" : "Full catalog"}
-            description={
-              hasActiveFilters
-                ? "Showing products that match your current filters."
-                : "Browse the complete collection."
-            }
-            className="scroll-mt-24"
-          >
-            <div id="catalog">
-              {filteredProducts.length === 0 ? (
-                <EmptyState
-                  title="No products found"
-                  description="Try changing your filters."
-                  actionLabel="Clear filters"
-                  onAction={clearFilters}
-                  icon={<Search className="h-5 w-5" />}
-                />
-              ) : (
-                <ProductGrid products={filteredProducts} />
-              )}
+    {loading ? (
+      <GridSkeleton rows={8} />
+    ) : error ? (
+      <ErrorState
+        error={error}
+        onAction={() => window.location.reload()}
+        actionLabel="Retry"
+      />
+    ) : (
+      <>
+        {!hasActiveFilters ? (
+          <>
+            <div id="featured">
+              <FeaturedProductsSection products={products} />
             </div>
-          </ProductSection>
-        </>
-      )}
-    </div>
+
+            <TrendingProductsSection products={products} />
+
+            <SaleProductsSection products={products} />
+
+            <NewArrivalsSection products={products} />
+          </>
+        ) : null}
+
+        <ProductSection
+          title={hasActiveFilters ? "Filtered results" : "Full catalog"}
+          description={
+            hasActiveFilters
+              ? "Showing products that match your current filters."
+              : "Browse the complete collection."
+          }
+          className="scroll-mt-24"
+        >
+          <div id="catalog">
+            {filteredProducts.length === 0 ? (
+              <EmptyState
+                title="No products found"
+                description="Try changing your filters."
+                actionLabel="Clear filters"
+                onAction={clearFilters}
+                icon={<Search className="h-5 w-5" />}
+              />
+            ) : (
+              <ProductGrid products={filteredProducts} />
+            )}
+          </div>
+        </ProductSection>
+      </>
+    )}
+  </div>
+</div>
+
+
   );
 }
