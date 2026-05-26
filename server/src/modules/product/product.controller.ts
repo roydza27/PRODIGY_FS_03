@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+
 import {
   createProduct,
   deleteProduct,
@@ -9,9 +10,11 @@ import {
   updateSellerProduct,
   deleteSellerProduct,
   getSellerProductStats,
-  verifyProductOwnership,
+  addProductReview,
+  canUserReviewProduct,
+  getProductReviews,
 } from "./product.service";
-import { AppError } from "@/utils/AppError";
+import { createProductReviewSchema } from "./product.validation";
 
 export async function handleCreateProduct(
   req: Request,
@@ -129,10 +132,6 @@ export async function handleDeleteProduct(
 // SELLER-SPECIFIC PRODUCT HANDLERS
 // ============================================
 
-/**
- * Create a product as a seller
- * Automatically assigns the current user as the seller
- */
 export async function handleCreateSellerProduct(
   req: Request,
   res: Response,
@@ -148,7 +147,7 @@ export async function handleCreateSellerProduct(
 
     const product = await createProduct({
       ...req.body,
-      sellerId: req.user.userId, // Auto-assign current user as seller
+      sellerId: req.user.userId,
     });
 
     res.status(201).json({
@@ -161,9 +160,6 @@ export async function handleCreateSellerProduct(
   }
 }
 
-/**
- * Get all products for the current seller
- */
 export async function handleGetSellerProducts(
   req: Request,
   res: Response,
@@ -188,9 +184,6 @@ export async function handleGetSellerProducts(
   }
 }
 
-/**
- * Get product statistics for the current seller
- */
 export async function handleGetSellerProductStats(
   req: Request,
   res: Response,
@@ -215,9 +208,6 @@ export async function handleGetSellerProductStats(
   }
 }
 
-/**
- * Update a product as a seller (with ownership check)
- */
 export async function handleUpdateSellerProduct(
   req: Request,
   res: Response,
@@ -232,7 +222,11 @@ export async function handleUpdateSellerProduct(
     }
 
     const productId = String(req.params.id);
-    const product = await updateSellerProduct(productId, req.user.userId, req.body);
+    const product = await updateSellerProduct(
+      productId,
+      req.user.userId,
+      req.body
+    );
 
     res.json({
       success: true,
@@ -250,9 +244,6 @@ export async function handleUpdateSellerProduct(
   }
 }
 
-/**
- * Delete a product as a seller (with ownership check)
- */
 export async function handleDeleteSellerProduct(
   req: Request,
   res: Response,
@@ -280,6 +271,85 @@ export async function handleDeleteSellerProduct(
         message: error.message,
       });
     }
+    next(error);
+  }
+}
+
+// ============================================
+// REVIEW HANDLERS
+// ============================================
+
+export async function handleGetProductReviews(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const reviews = await getProductReviews(req.params.id);
+
+    return res.json({
+      success: true,
+      reviews,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function handleGetProductReviewState(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      return res.json({
+        success: true,
+        canReview: false,
+      });
+    }
+
+    const canReview = await canUserReviewProduct(
+      req.params.id,
+      req.user.userId
+    );
+
+    return res.json({
+      success: true,
+      canReview,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function handleAddProductReview(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const parsed = createProductReviewSchema.parse({ body: req.body });
+
+    const product = await addProductReview(
+      req.params.id,
+      req.user.userId,
+      parsed.body
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Review submitted successfully",
+      product,
+    });
+  } catch (error) {
     next(error);
   }
 }

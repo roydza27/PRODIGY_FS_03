@@ -91,3 +91,4 @@ export interface ProductResponse {
   message?: string;
   product: Product;
 }
+

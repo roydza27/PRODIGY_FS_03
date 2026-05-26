@@ -11,6 +11,12 @@ import {
   handleDeleteSellerProduct,
   handleGetSellerProductStats,
 } from "./product.controller";
+import {
+  handleGetProductReviews,
+  handleGetProductReviewState,
+  handleAddProductReview,
+} from "./product.controller";
+import { protect } from "@/middlewares/auth.middleware";
 
 import { protect, authorizeRoles } from "@/middlewares/auth.middleware";
 import { validateBody } from "@/middlewares/validateBody.middleware";
@@ -23,15 +29,11 @@ import {
 
 const router = Router();
 
-// ============================================
-// PUBLIC ROUTES
-// ============================================
+// Public routes
 router.get("/", handleGetProducts);
 router.get("/:id", handleGetProductById);
 
-// ============================================
-// ADMIN ROUTES (keep existing admin functionality)
-// ============================================
+// Admin routes
 router.post(
   "/",
   protect,
@@ -54,5 +56,48 @@ router.delete(
   authorizeRoles("admin"),
   handleDeleteProduct
 );
+
+// Seller routes
+router.post(
+  "/seller",
+  protect,
+  authorizeRoles("seller"),
+  validateBody(createSellerProductSchema),
+  handleCreateSellerProduct
+);
+
+router.get(
+  "/seller/list",
+  protect,
+  authorizeRoles("seller"),
+  handleGetSellerProducts
+);
+
+router.get(
+  "/seller/stats",
+  protect,
+  authorizeRoles("seller"),
+  handleGetSellerProductStats
+);
+
+router.patch(
+  "/seller/:id",
+  protect,
+  authorizeRoles("seller"),
+  validateBody(updateSellerProductSchema),
+  handleUpdateSellerProduct
+);
+
+router.delete(
+  "/seller/:id",
+  protect,
+  authorizeRoles("seller"),
+  handleDeleteSellerProduct
+);
+
+router.get("/:id/reviews", handleGetProductReviews);
+router.get("/:id/review-state", protect, handleGetProductReviewState);
+router.post("/:id/reviews", protect, handleAddProductReview);
+
 
 export default router;

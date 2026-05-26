@@ -1,27 +1,28 @@
-import { useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Heart, Copy } from "lucide-react";
+import { Copy, Heart } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { useAuthStore } from "@/app/store/auth.store";
+import { useCart } from "@/features/cart/context/CartContext";
+import { useWishlist } from "@/features/wishlist/context/WishlistContext";
 
 import { useProduct } from "../hooks/useProduct";
 import { useProducts } from "../hooks/useProducts";
-import { useCart } from "@/features/cart/context/CartContext";
-import { useAuthStore } from "@/app/store/auth.store";
-import { useWishlist } from "@/features/wishlist/context/WishlistContext";
 import { formatPrice, getProductImage } from "../utils/product.helpers";
+import { productService, type ProductReview } from "../services/product.service";
 
+import ProductActions from "../components/ProductActions";
 import ProductBreadcrumb from "../components/ProductBreadcrumb";
+import ProductDeliveryInfo from "../components/ProductDeliveryInfo";
+import ProductFAQ from "@/features/products/components/ProductFAQ";
 import ProductImageGallery from "../components/ProductImageGallery";
 import ProductInfo from "../components/ProductInfo";
 import ProductOptions from "../components/ProductOptions";
-import ProductActions from "../components/ProductActions";
-import ProductDeliveryInfo from "../components/ProductDeliveryInfo";
-import RelatedProducts from "../components/RelatedProducts";
-import ProductSpecifications from "@/features/products/components/ProductSpecifications";
 import ProductReviews from "@/features/products/components/ProductReviews";
-import ProductFAQ from "@/features/products/components/ProductFAQ";
+import ProductSpecifications from "@/features/products/components/ProductSpecifications";
+import RelatedProducts from "../components/RelatedProducts";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -34,6 +35,9 @@ export default function ProductDetailsPage() {
   const { product, loading, error } = useProduct(id ?? "");
   const { products } = useProducts();
 
+  const [canReview, setCanReview] = useState(false);
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+
   const productColors = product && "colors" in product ? product.colors ?? [] : [];
   const productSizes = product && "sizes" in product ? product.sizes ?? [] : [];
 
@@ -43,6 +47,36 @@ export default function ProductDetailsPage() {
   const [cartLoading, setCartLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [copyingId, setCopyingId] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+
+    let alive = true;
+
+    async function loadReviewData() {
+      try {
+        const [reviewStateRes, reviewsRes] = await Promise.all([
+          productService.getReviewState(id),
+          productService.getReviews(id),
+        ]);
+
+        if (!alive) return;
+
+        setCanReview(reviewStateRes.canReview);
+        setReviews(reviewsRes.reviews || []);
+      } catch {
+        if (!alive) return;
+        setCanReview(false);
+        setReviews([]);
+      }
+    }
+
+    void loadReviewData();
+
+    return () => {
+      alive = false;
+    };
+  }, [id]);
 
   const images = useMemo(() => {
     if (!product) return [];
@@ -115,6 +149,41 @@ export default function ProductDetailsPage() {
     }
   };
 
+  const handleSubmitReview = async ({
+    rating,
+    comment,
+  }: {
+    rating: number;
+    comment: string;
+  }) => {
+    if (!product) return;
+
+    if (!isAuthenticated) {
+      toast.info("Please log in to review this product");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await productService.addReview(product._id, {
+        rating,
+        comment,
+      });
+
+      const [reviewStateRes, reviewsRes] = await Promise.all([
+        productService.getReviewState(product._id),
+        productService.getReviews(product._id),
+      ]);
+
+      setCanReview(reviewStateRes.canReview);
+      setReviews(reviewsRes.reviews || []);
+
+      toast.success("Review submitted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit review");
+    }
+  };
+
   const handleWishlist = async () => {
     if (!isAuthenticated) {
       toast.info("Please log in to save items to your wishlist");
@@ -167,12 +236,11 @@ export default function ProductDetailsPage() {
           <div className="rounded-2xl border border-white/10 bg-white/3 p-6 text-center">
             <h1 className="text-xl font-semibold">Product not found</h1>
             <p className="mt-2 text-sm text-zinc-400">
-              {error ? "Failed to load product details." : "This product no longer exists."}
+              {error
+                ? "Failed to load product details."
+                : "This product no longer exists."}
             </p>
-            <Button
-              className="mt-4"
-              onClick={() => navigate("/products")}
-            >
+            <Button className="mt-4" onClick={() => navigate("/products")}>
               Back to products
             </Button>
           </div>
@@ -183,7 +251,7 @@ export default function ProductDetailsPage() {
 
   return (
     <div className="min-h-screen bg-[#111113] text-white">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12 text-left">
+      <main className="mx-auto max-w-7xl px-4 py-8 text-left sm:px-6 lg:px-10 lg:py-12">
         <ProductBreadcrumb crumbs={breadcrumbs} />
 
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] xl:gap-12">
@@ -261,19 +329,17 @@ export default function ProductDetailsPage() {
         </div>
 
         <div className="mt-8 space-y-8 lg:mt-10 lg:space-y-10">
-          <ProductSpecifications
-            specs={[
-              { label: "Material", value: "Premium alloy and reinforced polymer" },
-              { label: "Dimensions", value: "41mm x 36mm x 10mm" },
-              { label: "Weight", value: "48g" },
-              { label: "Compatibility", value: "Android, iOS" },
-              { label: "Warranty", value: "1 year manufacturer warranty" },
-              { label: "Care", value: "Wipe with dry soft cloth" },
-            ]}
+          <ProductSpecifications specs={product.specifications ?? []} />
+
+          <ProductReviews
+            averageRating={product.rating ?? 0}
+            reviewCount={product.reviewCount ?? 0}
+            reviews={reviews}
+            canReview={canReview}
+            onSubmitReview={handleSubmitReview}
           />
 
-          <ProductReviews averageRating={4.5} reviewCount={128} />
-          <ProductFAQ />
+          <ProductFAQ items={product.faqs ?? []} />
           <RelatedProducts products={relatedItems} formatPrice={formatPrice} />
         </div>
       </main>

@@ -16,6 +16,37 @@ const faqSchema = new Schema(
   { _id: false }
 );
 
+const reviewSchema = new Schema(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    order: {
+      type: Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
 const productSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -48,17 +79,16 @@ const productSchema = new Schema(
       default: "active",
       index: true,
     },
-    // Seller ownership - links product to a seller/user
     sellerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       index: true,
     },
-    // Rating and reviews
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0, min: 0 },
     specifications: { type: [specificationSchema], default: [] },
     faqs: { type: [faqSchema], default: [] },
+    reviews: { type: [reviewSchema], default: [] },
   },
   { timestamps: true }
 );
