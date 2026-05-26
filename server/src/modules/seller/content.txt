@@ -1,0 +1,576 @@
+===== FILE: ./index.ts =====
+export { sellerService } from "./seller.service";
+export { default as sellerRoutes } from "./seller.routes";
+export type { SellerApplicationRequest, SellerApprovalRequest, SellerStats, SellerDashboardData } from "./seller.types";
+
+
+
+===== FILE: ./seller.service.ts =====
+import { User } from "@/modules/auth/auth.model";
+import { Product } from "@/modules/product/product.model";
+import { AppError } from "@/utils/AppError";
+import type {
+  SellerApplicationRequest,
+  SellerApprovalRequest,
+  SellerStats,
+  SellerDashboardData,
+} from "./seller.types";
+
+export const sellerService = {
+  // Apply to become a seller
+  async applyForSeller(
+    userId: string,
+    applicationData: SellerApplicationRequest
+  ) {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.role !== "user") {
+      throw new AppError("Only regular users can apply to become sellers", 400);
+    }
+
+    if (user.sellerStatus !== "none") {
+      throw new AppError(
+        `Cannot apply. Current status: ${user.sellerStatus}`,
+        400
+      );
+    }
+
+    // Update user with seller application data
+    user.sellerStatus = "applied";
+    user.sellerAppliedAt = new Date();
+    user.sellerInfo = applicationData;
+
+    await user.save();
+
+    return {
+      message: "Seller application submitted successfully",
+      data: {
+        userId: user._id,
+        sellerStatus: user.sellerStatus,
+      },
+    };
+  },
+
+  // Admin: Get all seller applications
+  async getAllApplications() {
+    const users = await User.find({
+      sellerStatus: { $in: ["applied", "approved", "rejected", "suspended"] },
+    }).select("name email sellerInfo sellerStatus sellerAppliedAt sellerApprovedAt");
+
+    return users;
+  },
+
+  // Admin: Get single seller application
+  async getApplicationById(userId: string) {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.sellerStatus === "none") {
+      throw new AppError("User has not applied to become a seller", 400);
+    }
+
+    return user;
+  },
+
+  // Admin: Approve seller application
+  async approveSeller(
+    userId: string,
+    adminId: string
+  ) {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.sellerStatus !== "applied") {
+      throw new AppError("Application is not in applied status", 400);
+    }
+
+    // Update seller status
+    user.role = "seller";
+    user.sellerStatus = "approved";
+    user.sellerApprovedAt = new Date();
+
+    await user.save();
+
+    return {
+      message: "Seller application approved successfully",
+      data: {
+        userId: user._id,
+        role: user.role,
+        sellerStatus: user.sellerStatus,
+      },
+    };
+  },
+
+  // Admin: Reject seller application
+  async rejectSeller(
+    userId: string,
+    rejectionReason: string
+  ) {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.sellerStatus !== "applied") {
+      throw new AppError("Application is not in applied status", 400);
+    }
+
+    user.sellerStatus = "rejected";
+    user.sellerRejectedAt = new Date();
+    user.sellerRejectionReason = rejectionReason;
+
+    await user.save();
+
+    return {
+      message: "Seller application rejected",
+      data: {
+        userId: user._id,
+        sellerStatus: user.sellerStatus,
+      },
+    };
+  },
+
+  // Seller: Get dashboard data
+  async getSellerDashboard(userId: string): Promise<SellerDashboardData> {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (user.role !== "seller") {
+      throw new AppError("User is not a seller", 403);
+    }
+
+    // Get seller stats
+    const stats = await this.getSellerStats(userId);
+
+    return {
+      seller: {
+        name: user.name,
+        email: user.email,
+        shopName: user.sellerInfo?.shopName || "",
+        shopDescription: user.sellerInfo?.shopDescription || "",
+        sellerStatus: user.sellerStatus,
+      },
+      stats,
+    };
+  },
+
+  // Get seller stats (products, orders, revenue, etc.)
+  async getSellerStats(sellerId: string): Promise<SellerStats> {
+    const [totalProducts, totalReviews] = await Promise.all([
+      Product.countDocuments({ sellerId, status: "active" }),
+      Product.aggregate([
+        { $match: { sellerId: require("mongoose").Types.ObjectId(sellerId) } },
+        { $group: { _id: null, total: { $sum: "$reviewCount" } } },
+      ]),
+    ]);
+
+    const totalReviewsCount = totalReviews[0]?.total || 0;
+    const avgRating = await Product.aggregate([
+      { $match: { sellerId: require("mongoose").Types.ObjectId(sellerId) } },
+      { $group: { _id: null, avgRating: { $avg: "$rating" } } },
+    ]);
+
+    return {
+      totalProducts,
+      totalOrders: 0, // Will be updated when order module is enhanced
+      totalRevenue: 0, // Will be updated when order module is enhanced
+      averageRating: avgRating[0]?.avgRating || 0,
+      totalReviews: totalReviewsCount,
+    };
+  },
+
+  // Get seller profile for public view
+  async getSellerProfile(userId: string) {
+    const user = await User.findById(userId);
+
+    if (!user || user.role !== "seller" || user.sellerStatus !== "approved") {
+      throw new AppError("Seller not found", 404);
+    }
+
+    const stats = await this.getSellerStats(userId);
+
+    return {
+      id: user._id,
+      name: user.name,
+      shopName: user.sellerInfo?.shopName || "",
+      shopDescription: user.sellerInfo?.shopDescription || "",
+      coverImage: user.sellerInfo?.coverImage,
+      profileImage: user.sellerInfo?.profileImage,
+      stats,
+      joinedAt: user.createdAt,
+    };
+  },
+};
+
+
+
+===== FILE: ./seller.controller.ts =====
+import type { Request, Response, NextFunction } from "express";
+import { sellerService } from "./seller.service";
+import { AppError } from "@/utils/AppError";
+
+// User: Apply to become a seller
+export const handleApplyForSeller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const result = await sellerService.applyForSeller(
+      req.user.userId,
+      req.body
+    );
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result.data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin: Get all seller applications
+export const handleGetAllApplications = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const applications = await sellerService.getAllApplications();
+
+    res.status(200).json({
+      success: true,
+      data: applications,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get single application
+export const handleGetApplicationById = async (
+  req: Request<{ userId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const application = await sellerService.getApplicationById(userId);
+
+    res.status(200).json({
+      success: true,
+      data: application,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin: Approve seller
+export const handleApproveSeller = async (
+  req: Request<{ userId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("Admin not authenticated", 401);
+    }
+
+    const { userId } = req.params;
+    const result = await sellerService.approveSeller(
+      userId,
+      req.user.userId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result.data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin: Reject seller
+export const handleRejectSeller = async (
+  req: Request<{ userId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("Admin not authenticated", 401);
+    }
+
+    const { userId } = req.params;
+    const { rejectionReason } = req.body;
+
+    if (!rejectionReason) {
+      throw new AppError("Rejection reason is required", 400);
+    }
+
+    const result = await sellerService.rejectSeller(userId, rejectionReason);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result.data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Seller: Get dashboard
+export const handleGetSellerDashboard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const dashboard = await sellerService.getSellerDashboard(req.user.userId);
+
+    res.status(200).json({
+      success: true,
+      data: dashboard,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get public seller profile
+export const handleGetSellerProfile = async (
+  req: Request<{ userId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const profile = await sellerService.getSellerProfile(userId);
+
+    res.status(200).json({
+      success: true,
+      data: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// User: Get their seller application status
+export const handleGetApplicationStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const application = await sellerService.getApplicationById(req.user.userId);
+
+    res.status(200).json({
+      success: true,
+      data: application,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+===== FILE: ./seller.validation.ts =====
+import { z } from "zod";
+
+export const sellerApplicationSchema = z.object({
+  body: z.object({
+    shopName: z.string().min(3, "Shop name must be at least 3 characters").trim(),
+    shopDescription: z
+      .string()
+      .min(10, "Shop description must be at least 10 characters")
+      .trim(),
+    businessEmail: z.string().email("Invalid business email").trim().toLowerCase(),
+    businessPhone: z.string().regex(/^[0-9+\-\s()]+$/, "Invalid phone number"),
+    bankAccountName: z.string().min(5, "Bank account name is required").trim(),
+    bankAccountNumber: z
+      .string()
+      .regex(/^[0-9]+$/, "Bank account number must contain only digits"),
+    bankCode: z.string().min(3, "Bank code is required").trim(),
+    businessRegistration: z.string().min(5, "Business registration is required").trim(),
+    gstNumber: z
+      .string()
+      .optional()
+      .refine(
+        (val) => !val || /^[0-9A-Z]{15}$/.test(val),
+        "Invalid GST number format"
+      ),
+  }),
+});
+
+export const sellerApprovalSchema = z.object({
+  body: z.object({
+    userId: z.string().min(1, "User ID is required"),
+    approve: z.boolean(),
+    rejectionReason: z
+      .string()
+      .optional()
+      .refine((val) => !val || val.length >= 5, "Rejection reason must be at least 5 characters"),
+  }),
+});
+
+export type SellerApplicationRequest = z.infer<typeof sellerApplicationSchema>["body"];
+export type SellerApprovalRequest = z.infer<typeof sellerApprovalSchema>["body"];
+
+
+
+===== FILE: ./seller.types.ts =====
+// Seller application request/response types
+
+export interface SellerApplicationRequest {
+  shopName: string;
+  shopDescription: string;
+  businessEmail: string;
+  businessPhone: string;
+  bankAccountName: string;
+  bankAccountNumber: string;
+  bankCode: string;
+  businessRegistration: string;
+  gstNumber: string;
+}
+
+export interface SellerApplicationResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    userId: string;
+    sellerStatus: string;
+    sellerInfo: SellerApplicationRequest;
+  };
+}
+
+export interface SellerApprovalRequest {
+  userId: string;
+  approve: boolean;
+  rejectionReason?: string;
+}
+
+export interface SellerStats {
+  totalProducts: number;
+  totalOrders: number;
+  totalRevenue: number;
+  averageRating: number;
+  totalReviews: number;
+}
+
+export interface SellerDashboardData {
+  seller: {
+    name: string;
+    email: string;
+    shopName: string;
+    shopDescription: string;
+    sellerStatus: string;
+  };
+  stats: SellerStats;
+}
+
+
+
+===== FILE: ./seller.routes.ts =====
+import { Router } from "express";
+import {
+  handleApplyForSeller,
+  handleGetApplicationStatus,
+  handleGetAllApplications,
+  handleGetApplicationById,
+  handleApproveSeller,
+  handleRejectSeller,
+  handleGetSellerDashboard,
+  handleGetSellerProfile,
+} from "./seller.controller";
+
+import { protect, authorizeRoles } from "@/middlewares/auth.middleware";
+import { validateBody } from "@/middlewares/validateBody.middleware";
+import {
+  sellerApplicationSchema,
+  sellerApprovalSchema,
+} from "./seller.validation";
+
+const router = Router();
+
+// Public routes
+router.get("/profile/:userId", handleGetSellerProfile);
+
+// Protected user routes
+router.post(
+  "/apply",
+  protect,
+  validateBody(sellerApplicationSchema),
+  handleApplyForSeller
+);
+
+router.get("/status", protect, handleGetApplicationStatus);
+
+router.get("/dashboard", protect, handleGetSellerDashboard);
+
+// Admin routes
+router.get(
+  "/admin/applications",
+  protect,
+  authorizeRoles("admin"),
+  handleGetAllApplications
+);
+
+router.get(
+  "/admin/applications/:userId",
+  protect,
+  authorizeRoles("admin"),
+  handleGetApplicationById
+);
+
+router.post(
+  "/admin/approve/:userId",
+  protect,
+  authorizeRoles("admin"),
+  handleApproveSeller
+);
+
+router.post(
+  "/admin/reject/:userId",
+  protect,
+  authorizeRoles("admin"),
+  validateBody(sellerApprovalSchema),
+  handleRejectSeller
+);
+
+export default router;
+
+
+
