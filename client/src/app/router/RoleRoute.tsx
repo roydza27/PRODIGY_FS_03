@@ -1,12 +1,15 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuthStore } from "../store/auth.store";
 
 type RoleRouteProps = {
   allowedRoles: string[];
 };
 
 export default function RoleRoute({ allowedRoles }: RoleRouteProps) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (isLoading) {
     return (
@@ -21,6 +24,13 @@ export default function RoleRoute({ allowedRoles }: RoleRouteProps) {
   }
 
   if (!user || !allowedRoles.includes(user.role)) {
+    // Redirect to appropriate dashboard based on user role
+    if (user?.role === "seller") {
+      return <Navigate to="/seller" replace />;
+    }
+    if (user?.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
     return <Navigate to="/account" replace />;
   }
 

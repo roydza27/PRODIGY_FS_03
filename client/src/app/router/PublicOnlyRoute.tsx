@@ -1,23 +1,30 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuthStore } from "../store/auth.store";
 
 export default function PublicOnlyRoute() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#111113]/95 flex items-center justify-center text-white">
+      <div className="flex min-h-screen items-center justify-center bg-[#111113]/95 text-white">
         Loading...
       </div>
     );
   }
 
   if (isAuthenticated) {
-    return user?.role === "admin" ? (
-      <Navigate to="/admin" replace />
-    ) : (
-      <Navigate to="/account" replace />
-    );
+    if (user?.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
+
+    if (user?.role === "seller") {
+      return <Navigate to="/seller" replace />;
+    }
+
+    return <Navigate to="/account" replace />;
   }
 
   return <Outlet />;

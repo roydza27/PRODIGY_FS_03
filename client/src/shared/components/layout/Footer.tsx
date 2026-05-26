@@ -61,7 +61,7 @@ export default function Footer() {
           {/* Left Column: Brand, Desc, Newsletter */}
           <div className="flex flex-col space-y-10 md:col-span-5 lg:col-span-5 lg:pr-8">
             
-            <div className="space-y-6">
+            <div className="space-y-6 text-left">
               <Link
                 to="/"
                 className="group flex w-fit items-center gap-3 focus:outline-none"
@@ -71,7 +71,7 @@ export default function Footer() {
                 </div>
                 <div className="flex flex-col justify-center">
                   <span className="text-base font-semibold tracking-tight text-zinc-100">
-                    LocalStore
+                    
                   </span>
                   <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                     E-commerce platform
