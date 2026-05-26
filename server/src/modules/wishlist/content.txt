@@ -1,0 +1,219 @@
+===== FILE: ./wishlist.routes.ts =====
+import { Router } from "express";
+import { protect } from "@/middlewares/auth.middleware";
+import {
+  handleAddToWishlist,
+  handleClearWishlist,
+  handleGetWishlist,
+  handleRemoveFromWishlist,
+} from "./wishlist.controller";
+
+const router = Router();
+
+router.get("/", protect, handleGetWishlist);
+router.post("/:productId", protect, handleAddToWishlist);
+router.delete("/:productId", protect, handleRemoveFromWishlist);
+router.delete("/", protect, handleClearWishlist);
+
+export default router;
+
+
+===== FILE: ./wishlist.service.ts =====
+import mongoose from "mongoose";
+import { User } from "@/modules/auth/auth.model";
+import { Product } from "@/modules/product/product.model";
+import { AppError } from "@/utils/AppError";
+
+export const wishlistService = {
+  async getWishlist(userId: string) {
+    const user = await User.findById(userId).populate("wishlist");
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    return user.wishlist || [];
+  },
+
+  async addToWishlist(userId: string, productId: string) {
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      throw new AppError("Invalid product ID", 400);
+    }
+
+    const [user, product] = await Promise.all([
+      User.findById(userId),
+      Product.findById(productId),
+    ]);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (!product) {
+      throw new AppError("Product not found", 404);
+    }
+
+    const alreadyAdded = user.wishlist?.some(
+      (item: mongoose.Types.ObjectId) => item.toString() === productId
+    );
+
+    if (!alreadyAdded) {
+      user.wishlist = [...(user.wishlist || []), product._id];
+      await user.save();
+    }
+
+    return user.wishlist;
+  },
+
+  async removeFromWishlist(userId: string, productId: string) {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    user.wishlist = (user.wishlist || []).filter(
+      (item: mongoose.Types.ObjectId) => item.toString() !== productId
+    );
+
+    await user.save();
+
+    return user.wishlist;
+  },
+
+  async clearWishlist(userId: string) {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    user.wishlist = [];
+    await user.save();
+
+    return user.wishlist;
+  },
+};
+
+
+===== FILE: ./wishlist.types.ts =====
+export interface WishlistResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    userId: string;
+    wishlist: string[];
+  };
+}
+
+
+===== FILE: ./wishlist.controller.ts =====
+import type { Request, Response, NextFunction } from "express";
+import { AppError } from "@/utils/AppError";
+import { wishlistService } from "./wishlist.service";
+
+export const handleGetWishlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const wishlist = await wishlistService.getWishlist(req.user.userId);
+
+    res.status(200).json({
+      success: true,
+      data: wishlist,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleAddToWishlist = async (
+  req: Request<{ productId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const { productId } = req.params;
+    const wishlist = await wishlistService.addToWishlist(
+      req.user.userId,
+      productId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Product added to wishlist",
+      data: {
+        userId: req.user.userId,
+        wishlist: wishlist.map((item: any) => item.toString()),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleRemoveFromWishlist = async (
+  req: Request<{ productId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const { productId } = req.params;
+    const wishlist = await wishlistService.removeFromWishlist(
+      req.user.userId,
+      productId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Product removed from wishlist",
+      data: {
+        userId: req.user.userId,
+        wishlist: wishlist.map((item: any) => item.toString()),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleClearWishlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const wishlist = await wishlistService.clearWishlist(req.user.userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Wishlist cleared",
+      data: {
+        userId: req.user.userId,
+        wishlist: wishlist.map((item: any) => item.toString()),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
