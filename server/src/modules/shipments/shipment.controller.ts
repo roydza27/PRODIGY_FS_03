@@ -1,12 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
+
 import {
   createShipmentSchema,
+  updateShipmentSchema,
   updateShipmentStatusSchema,
 } from "./shipment.validation";
+
 import {
   createShipment,
   getShipmentById,
   getShipments,
+  updateShipment,
   updateShipmentStatus,
 } from "./shipment.service";
 
@@ -70,6 +74,26 @@ export async function getShipmentByIdController(
   }
 }
 
+export async function updateShipmentController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const parsed = updateShipmentSchema.parse(req.body);
+
+    const shipment = await updateShipment(req.params.id, parsed);
+
+    return res.json({
+      success: true,
+      message: "Shipment updated successfully",
+      shipment,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function updateShipmentStatusController(
   req: Request,
   res: Response,
@@ -77,7 +101,11 @@ export async function updateShipmentStatusController(
 ) {
   try {
     const parsed = updateShipmentStatusSchema.parse(req.body);
-    const shipment = await updateShipmentStatus(req.params.id, parsed.status);
+
+    const shipment = await updateShipmentStatus(
+      req.params.id,
+      parsed.status
+    );
 
     return res.json({
       success: true,

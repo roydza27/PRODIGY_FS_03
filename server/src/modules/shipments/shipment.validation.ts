@@ -8,6 +8,13 @@ export const createShipmentSchema = z.object({
   status: z.enum(["pending", "packed", "in_transit", "delivered", "cancelled"]).optional(),
 });
 
+export const updateShipmentSchema = z.object({
+  carrier: z.string().min(2).optional(),
+  trackingNumber: z.string().min(3).optional(),
+  eta: z.string().min(2).optional(),
+  status: z.enum(["pending", "packed", "in_transit", "delivered", "cancelled"]).optional(),
+});
+
 export const updateShipmentStatusSchema = z.object({
   status: z.enum(["pending", "packed", "in_transit", "delivered", "cancelled"]),
 });

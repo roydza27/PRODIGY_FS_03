@@ -1,3 +1,4 @@
+// shipment.service.ts
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 function getToken() {
@@ -7,14 +8,17 @@ function getToken() {
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getToken();
 
+  const headers = new Headers(options?.headers);
+
+  if (!headers.has("Accept")) headers.set("Accept", "application/json");
+  if (!(options?.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
   const res = await fetch(`${API_URL}${url}`, {
     ...options,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options?.headers || {}),
-    },
+    headers,
   });
 
   const data = await res.json().catch(() => null);
@@ -86,7 +90,15 @@ export type CreateShipmentPayload = {
   trackingNumber: string;
   eta: string;
   status?: ShipmentStatus;
+  assignedToName?: string;
+  assignedToRole?: string;
+  assignedToPhone?: string;
+  assignedNotes?: string;
 };
+
+export type UpdateShipmentPayload = Partial<
+  Omit<CreateShipmentPayload, "orderId">
+>;
 
 export const shipmentService = {
   getAll: () => request<ShipmentsResponse>("/shipments"),
@@ -96,6 +108,12 @@ export const shipmentService = {
   create: (payload: CreateShipmentPayload) =>
     request<ShipmentResponse>("/shipments", {
       method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  update: (id: string, payload: UpdateShipmentPayload) =>
+    request<ShipmentResponse>(`/shipments/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(payload),
     }),
 

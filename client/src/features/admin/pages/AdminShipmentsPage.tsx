@@ -139,17 +139,6 @@ export default function AdminShipmentsPage() {
   const updateShipmentStatus = async (shipmentId: string, status: ShipmentStatus) => {
     const targetShipment = shipments.find((shipment) => shipment._id === shipmentId);
 
-    if (
-      status === "delivered" &&
-      targetShipment &&
-      (!targetShipment.carrier || targetShipment.carrier === "Not Assigned" ||
-        !targetShipment.trackingNumber ||
-        targetShipment.trackingNumber.startsWith("TBD-"))
-    ) {
-      toast.error("Assign carrier and tracking number before marking as delivered");
-      return;
-    }
-
     try {
       setUpdatingShipmentId(shipmentId);
       const res = await shipmentService.updateStatus(shipmentId, status);
@@ -190,11 +179,7 @@ export default function AdminShipmentsPage() {
         trackingNumber: form.trackingNumber.trim(),
         eta: form.eta.trim(),
         status: form.status,
-        assignedToName: form.assignedToName.trim(),
-        assignedToRole: form.assignedToRole.trim(),
-        assignedToPhone: form.assignedToPhone.trim(),
-        assignedNotes: form.assignedNotes.trim(),
-      } as any);
+      });
 
       toast.success("Shipment created successfully");
       setForm(EMPTY_FORM);
@@ -204,6 +189,34 @@ export default function AdminShipmentsPage() {
       toast.error(error instanceof Error ? error.message : "Failed to create shipment");
     } finally {
       setCreatingShipment(false);
+    }
+  };
+
+  const handleEditShipment = async (
+    shipmentId: string,
+    payload: {
+      carrier: string;
+      trackingNumber: string;
+      eta: string;
+      status: ShipmentStatus;
+    }
+  ) => {
+    try {
+      setUpdatingShipmentId(shipmentId);
+
+      const res = await shipmentService.update(shipmentId, payload);
+
+      setShipments((prev) =>
+        prev.map((shipment) =>
+          shipment._id === shipmentId ? { ...shipment, ...res.shipment } : shipment
+        )
+      );
+
+      toast.success("Shipment updated successfully");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update shipment");
+    } finally {
+      setUpdatingShipmentId(null);
     }
   };
 
@@ -233,7 +246,7 @@ export default function AdminShipmentsPage() {
     >
       <div className="space-y-6">
 
-        <div className="grid text grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mx-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mx-6">
           {[
             {
               label: "Packed",
@@ -296,6 +309,7 @@ export default function AdminShipmentsPage() {
               <ShipmentTable
                 shipments={filteredShipments}
                 onStatusChange={updateShipmentStatus}
+                onEditShipment={handleEditShipment}
                 updatingShipmentId={updatingShipmentId}
               />
             )}

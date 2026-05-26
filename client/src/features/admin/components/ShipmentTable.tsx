@@ -301,19 +301,22 @@ export default function ShipmentTable({
               <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                 Fulfillment Status Tag
               </label>
-              <select
-                value={draftEdit.status}
-                onChange={(e) => setDraftEdit(prev => ({ ...prev, status: e.target.value as ShipmentStatus }))}
-                className="h-11 w-full rounded-xl border border-white/10 bg-[#1c1c1e] px-3 text-sm text-white outline-none focus:border-[#DB4444]"
-              >
-                <option value="pending">Pending</option>
-                <option value="packed">Packed</option>
-                <option value="in_transit">In Transit</option>
-                <option value="delivered" disabled={!isReadyForDelivery}>
-                  Delivered {!isReadyForDelivery ? " (Assign tracking metrics first)" : ""}
-                </option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+<select
+  value={draftEdit.status}
+  onChange={(e) =>
+    setDraftEdit((prev) => ({
+      ...prev,
+      status: e.target.value as ShipmentStatus,
+    }))
+  }
+  className="h-11 w-full rounded-xl border border-white/10 bg-[#1c1c1e] px-3 text-sm text-white outline-none focus:border-[#DB4444]"
+>
+  <option value="pending">Pending</option>
+  <option value="packed">Packed</option>
+  <option value="in_transit">In Transit</option>
+  <option value="delivered">Delivered</option>
+  <option value="cancelled">Cancelled</option>
+</select>
             </div>
 
             {/* Form Validation Warning Notice Blocks */}
