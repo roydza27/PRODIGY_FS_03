@@ -1,17 +1,18 @@
 import type { CheckoutFormData } from "../types/checkout.types";
+import type { Shipment } from "@/features/admin/services/shipment.service";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const token = sessionStorage.getItem("token");
+  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
 
   const res = await fetch(`${API_URL}${url}`, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options?.headers || {}),
     },
-    ...options,
   });
 
   const data = await res.json().catch(() => null);
@@ -30,13 +31,21 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   return data as T;
 }
 
+export type CreateOrderResponse = {
+  success: boolean;
+  message?: string;
+  order: {
+    _id: string;
+    status: string;
+    total: number;
+    shipment?: Shipment;
+  };
+  shipment: Shipment;
+};
+
 export const orderService = {
   createOrder: (payload: CheckoutFormData) =>
-    request<{
-      success: boolean;
-      message?: string;
-      order: { _id: string };
-    }>("/orders", {
+    request<CreateOrderResponse>("/orders", {
       method: "POST",
       body: JSON.stringify({
         shippingAddress: {

@@ -20,15 +20,8 @@ export type SidebarUserAction = {
   icon: SidebarIcon;
 };
 
-export type SidebarUser = {
-  name: string;
-  email: string;
-  avatar: string;
-};
-
 export type SidebarData = {
   brandName: string;
-  user: SidebarUser;
   navMain: SidebarItem[];
   documents: SidebarDocumentItem[];
   navSecondary: SidebarItem[];

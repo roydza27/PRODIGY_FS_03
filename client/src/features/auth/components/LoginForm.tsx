@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "@/features/auth/services/auth.service";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuthStore } from "@/app/store/auth.store";
 
 export default function LoginForm() {
   const navigate = useNavigate();
-  const { setSession } = useAuth();
-
+  const { setSession } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -27,7 +26,9 @@ export default function LoginForm() {
         remember: rememberMe,
       })
 
-      navigate("/dashboard", { replace: true })
+      if (data.user.role === "admin") navigate("/admin");
+      else if (data.user.role === "seller") navigate("/seller");
+      else navigate("/account");
     } catch (err) {
       setError("Invalid email or password");
     } finally {

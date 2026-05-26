@@ -23,19 +23,15 @@ import {
   IconUserCog,
   IconCreditCard,
   IconMapPin,
+  IconTrendingUp,
+  IconAlertCircle,
+  IconShoppingBag,
 } from "@tabler/icons-react";
 
 import type { SidebarData } from "@/shared/types/sidebar";
 
 export const userSidebarData: SidebarData = {
-  brandName: "LocalStore",
-
-  // In a real app, this user object would be fetched from your auth provider
-  user: {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "/avatars/john.jpg",
-  },
+  brandName: "Zynta",
 
   // Primary Navigation
   navMain: [
@@ -61,25 +57,152 @@ export const userSidebarData: SidebarData = {
 
   // User Dropdown / Account Menu
   userMenu: [
-    { label: "Dashboard", url: "/account", icon: IconLayoutGrid },
-    { label: "Order History", url: "/account/orders", icon: IconHistory },
-    { label: "Wishlist", url: "/account/wishlist", icon: IconHeart },
-    { label: "Saved Addresses", url: "/account/addresses", icon: IconMapPin },
-    { label: "Payment Methods", url: "/account/billing", icon: IconCreditCard },
-    { label: "Invoices", url: "/account/invoices", icon: IconReceipt2 },
-    { label: "Profile", url: "/account/profile", icon: IconUserCircle },
-    { label: "Settings", url: "/account/settings", icon: IconSettings },
+    // Account
+    {
+      label: "My Account",
+      url: "/account",
+      icon: IconLayoutGrid,
+    },
+    // Shopping
+    {
+      label: "Orders",
+      url: "/account/orders",
+      icon: IconHistory,
+    },
+    {
+      label: "Wishlist",
+      url: "/account/wishlist",
+      icon: IconHeart,
+    },
+    {
+      label: "Billing",
+      url: "/account/billing",
+      icon: IconCreditCard,
+    },
+    {
+      label: "Invoices",
+      url: "/account/invoices",
+      icon: IconReceipt2,
+    },
+
+    // Seller Journey
+    {
+      label: "Become a Seller",
+      url: "/account/become-seller",
+      icon: IconShoppingBag,
+    },
+
+    // Settings
+    {
+      label: "Settings",
+      url: "/account/settings",
+      icon: IconSettings,
+    },
+  ]
+};
+
+export const sellerSidebarData: SidebarData = {
+  brandName: "Zynta",
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/seller",
+      icon: IconLayoutGrid,
+    },
+    {
+      title: "Products",
+      url: "/seller/products",
+      icon: IconPackage,
+    },
+    {
+      title: "Orders",
+      url: "/seller/orders",
+      icon: IconShoppingCart,
+    },
+    {
+      title: "Analytics",
+      url: "/seller/analytics",
+      icon: IconChartBar,
+    },
+  ],
+
+  documents: [
+    {
+      name: "Inventory",
+      url: "/seller/inventory",
+      icon: IconClipboardList,
+    },
+    {
+      name: "Earnings",
+      url: "/seller/earnings",
+      icon: IconTrendingUp,
+    },
+    {
+      name: "Shipments",
+      url: "/seller/shipments",
+      icon: IconTruck,
+    },
+  ],
+
+  navSecondary: [
+    {
+      title: "Settings",
+      url: "/seller/settings",
+      icon: IconSettings,
+    },
+    {
+      title: "Support",
+      url: "/seller/support",
+      icon: IconMessageCircle,
+    },
+  ],
+
+  userMenu: [
+    {
+      label: "My Products",
+      url: "/seller/products",
+      icon: IconPackage,
+    },
+    {
+      label: "Orders",
+      url: "/seller/orders",
+      icon: IconShoppingCart,
+    },
+    {
+      label: "Analytics",
+      url: "/seller/analytics",
+      icon: IconChartBar,
+    },
+    {
+      label: "Inventory",
+      url: "/seller/inventory",
+      icon: IconClipboardList,
+    },
+    {
+      label: "Earnings",
+      url: "/seller/earnings",
+      icon: IconTrendingUp,
+    },
+    {
+      label: "Shop Settings",
+      url: "/seller/settings",
+      icon: IconSettings,
+    },
+    {
+      label: "Profile",
+      url: "/account/profile",
+      icon: IconUserCircle,
+    },
+    {
+      label: "Account Settings",
+      url: "/account/settings",
+      icon: IconUserCog,
+    },
   ],
 };
 
 export const adminSidebarData: SidebarData = {
-  brandName: "LocalStore Admin",
-
-  user: {
-    name: "Admin User",
-    email: "admin@localstore.com",
-    avatar: "/avatars/admin.jpg",
-  },
+  brandName: "Zynta",
 
   navMain: [
     {
@@ -128,6 +251,11 @@ export const adminSidebarData: SidebarData = {
   ],
 
   navSecondary: [
+    {
+      title: "Seller Applications",
+      url: "/admin/seller-applications",
+      icon: IconAlertCircle,
+    },
     {
       title: "Settings",
       url: "/admin/settings",
@@ -180,6 +308,11 @@ export const adminSidebarData: SidebarData = {
       label: "Shipments",
       url: "/admin/shipments",
       icon: IconTruck,
+    },
+    {
+      label: "Seller Applications",
+      url: "/admin/seller-applications",
+      icon: IconAlertCircle,
     },
     {
       label: "Staff",

@@ -1,13 +1,20 @@
 import AppRouter from "@/app/router";
-import { AuthProvider } from "@/app/providers/AuthProvider";
+import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { useAuthStore } from "@/app/store/auth.store";
 
 function App() {
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
+
+  useEffect(() => {
+    hydrateSession();
+  }, [hydrateSession]);
+  
   return (
-    <AuthProvider>
+    <>
       <AppRouter />
       <Toaster position="top-right" richColors />
-    </AuthProvider>
+    </>
   );
 }
 
