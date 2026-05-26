@@ -11,7 +11,7 @@ type Props = {
 
 export default function AccountHero({ hero }: Props) {
   return (
-    <section className="rounded-[28px] border border-white/10 bg-[#111113] p-6 shadow-2xl shadow-black/30 md:p-8">
+    <section className="text-left rounded-[28px] border border-white/10 bg-[#111113] p-6 shadow-2xl shadow-black/30 md:p-8">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-3">
           <Badge className="w-fit border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/5">

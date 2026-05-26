@@ -12,7 +12,7 @@ export default function AccountSectionTitle({
   action,
 }: Props) {
   return (
-    <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="text-left px-2 flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold tracking-[-0.03em] text-white">
           {title}

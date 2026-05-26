@@ -17,7 +17,7 @@ export default function QuickActionsSection({ actions }: Props) {
         description="Common account tasks."
       />
 
-      <div className="space-y-3 pt-5">
+      <div className="space-y-3 pt-5 text-">
         {actions.map((action) => (
           <Link
             key={action.label}

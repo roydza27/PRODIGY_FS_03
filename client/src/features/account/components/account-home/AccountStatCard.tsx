@@ -10,7 +10,7 @@ export default function AccountStatCard({ stat }: Props) {
 
   return (
     <Card className="border-white/10 bg-[#111113] text-white shadow-xl shadow-black/20">
-      <CardContent className="flex items-center gap-4 p-5">
+      <CardContent className="flex items-center gap-4 p-5 text-left">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
           <Icon className="h-5 w-5 text-[#DB4444]" />
         </div>

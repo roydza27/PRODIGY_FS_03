@@ -6,18 +6,14 @@ type Props = {
   type?: string;
 };
 
-export default function ProfileFormField({
-  label,
-  defaultValue,
-  type = "text",
-}: Props) {
+export default function ProfileFormField({ label, defaultValue, type = "text" }: Props) {
   return (
-    <div className="space-y-2">
-      <label className="text-sm text-zinc-400">{label}</label>
+    <div className="space-y-1.5 text-left ">
+      <label className="text-xs font-medium text-zinc-400 px-2">{label}</label>
       <Input
         type={type}
         defaultValue={defaultValue}
-        className="border-white/10 bg-black/20 text-white"
+        className="h-11 rounded-xl border-white/10 bg-black/40 text-white transition-all focus:border-[#DB4444] focus:ring-1 focus:ring-[#DB4444]"
       />
     </div>
   );

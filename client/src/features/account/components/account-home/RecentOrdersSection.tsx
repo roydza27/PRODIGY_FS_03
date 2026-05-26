@@ -18,7 +18,7 @@ export default function RecentOrdersSection({ orders }: Props) {
         description="Your latest purchases at a glance."
       />
 
-      <div className="space-y-4 pt-5">
+      <div className="space-y-4 pt-5 text-left">
         {orders.map((order) => (
           <div
             key={order.id}
