@@ -50,7 +50,7 @@ type OrdersResponse = {
 };
 
 export async function getCustomers(): Promise<AdminCustomer[]> {
-  const res = await request<OrdersResponse>("/orders");
+  const res = await request<OrdersResponse>("/orders/admin/all");
   const orders = res.orders || [];
 
   const customerMap = new Map<string, AdminCustomer>();

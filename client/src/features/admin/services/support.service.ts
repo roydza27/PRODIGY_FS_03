@@ -1,4 +1,4 @@
-import { type SupportStatus } from "../types/support.types";
+export type { SupportStatus } from "../types/support.types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 

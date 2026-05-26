@@ -70,7 +70,7 @@ export type AdminDashboardResponse = {
 export async function getDashboardStats(): Promise<AdminDashboardResponse> {
   const [productsRes, ordersRes] = await Promise.all([
     request<{ success: boolean; items: Product[] }>("/products"),
-    request<{ success: boolean; orders: AdminDashboardOrder[] }>("/orders"),
+    request<{ success: boolean; orders: AdminDashboardOrder[] }>("/orders/admin/all"),
   ]);
 
   const products = productsRes.items || [];
@@ -79,9 +79,7 @@ export async function getDashboardStats(): Promise<AdminDashboardResponse> {
   const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
   const activeProducts = products.filter((product) => product.status === "active").length;
   const totalCustomers = new Set(
-    orders
-      .map((order) => order.shippingAddress?.email)
-      .filter(Boolean)
+    orders.map((order) => order.shippingAddress?.email).filter(Boolean)
   ).size;
 
   return {

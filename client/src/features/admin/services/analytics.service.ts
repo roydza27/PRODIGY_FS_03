@@ -140,7 +140,7 @@ function buildStatusBreakdown<T extends { status: string }>(items: T[]) {
 export async function getAnalyticsDashboard(): Promise<AnalyticsDashboard> {
   const [productsRes, ordersRes, shipmentsRes, supportRes] = await Promise.all([
     request<ProductsResponse>("/products"),
-    request<OrdersResponse>("/orders"),
+    request<OrdersResponse>("/orders/admin/all"),
     request<ShipmentsResponse>("/shipments"),
     request<SupportResponse>("/support"),
   ]);

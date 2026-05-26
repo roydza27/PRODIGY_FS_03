@@ -7,8 +7,14 @@ import AdminPageShell from "../components/AdminPageShell";
 import OrderTable, { type AdminOrder } from "../components/OrderTable";
 import type { AdminOrderStatus } from "../components/OrderStatusBadge";
 import { formatPrice } from "@/features/products/utils/product.helpers";
+import {
+  EmptyState,
+  ErrorState,
+  TableSkeleton,
+} from "@/shared/components/page-state";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+const API_URL = API_BASE.endsWith("/api") ? API_BASE : `${API_BASE}/api`;
 
 function getToken() {
   return sessionStorage.getItem("token") || localStorage.getItem("token");
@@ -17,24 +23,34 @@ function getToken() {
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getToken();
 
-  const res = await fetch(`${API_URL}${url}`, {
+  const response = await fetch(`${API_URL}${url}`, {
     ...options,
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options?.headers || {}),
     },
   });
 
-  const data = await res.json().catch(() => null);
+  const raw = await response.text();
 
-  if (!res.ok) {
+  let data: any = null;
+  if (raw) {
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = { message: raw };
+    }
+  }
+
+  if (!response.ok) {
     const message =
       typeof data?.message === "string"
         ? data.message
         : Array.isArray(data?.message)
-          ? data.message?.[0]?.message || "Something went wrong"
-          : "Something went wrong";
+          ? data.message?.[0]?.message || `Request failed (${response.status})`
+          : `Request failed (${response.status})`;
 
     throw new Error(message);
   }
@@ -44,8 +60,32 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
 type OrdersResponse = {
   success: boolean;
-  orders: AdminOrder[];
+  orders?: AdminOrder[];
+  data?: {
+    orders?: AdminOrder[];
+  };
 };
+
+type OrderUpdateResponse = {
+  success: boolean;
+  order?: AdminOrder;
+  data?: {
+    order?: AdminOrder;
+  };
+  message?: string;
+};
+
+function extractOrders(payload: OrdersResponse): AdminOrder[] {
+  if (Array.isArray(payload.orders)) return payload.orders;
+  if (Array.isArray(payload.data?.orders)) return payload.data.orders;
+  return [];
+}
+
+function getCustomerLabel(order: AdminOrder) {
+  const fullName = order.shippingAddress?.fullName?.trim() || "";
+  const email = order.shippingAddress?.email?.trim() || "";
+  return [fullName, email].filter(Boolean).join(" • ") || "Unknown customer";
+}
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -59,8 +99,9 @@ export default function AdminOrdersPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await request<OrdersResponse>("/orders");
-      setOrders(res.orders || []);
+
+      const res = await request<OrdersResponse>("/orders/admin/all");
+      setOrders(extractOrders(res));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load orders");
     } finally {
@@ -69,7 +110,7 @@ export default function AdminOrdersPage() {
   };
 
   useEffect(() => {
-    loadOrders();
+    void loadOrders();
   }, []);
 
   const filteredOrders = useMemo(() => {
@@ -79,11 +120,24 @@ export default function AdminOrdersPage() {
       const matchesStatus =
         statusFilter === "all" ? true : order.status === statusFilter;
 
-      const customer = `${order.shippingAddress.fullName} ${order.shippingAddress.email}`.toLowerCase();
-      const orderId = order._id.toLowerCase();
+      const customerLabel = getCustomerLabel(order).toLowerCase();
+      const orderId = String(order._id || "").toLowerCase();
+      const address = [
+        order.shippingAddress?.address,
+        order.shippingAddress?.city,
+        order.shippingAddress?.state,
+        order.shippingAddress?.postalCode,
+        order.shippingAddress?.country,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
 
       const matchesQuery =
-        !query || customer.includes(query) || orderId.includes(query);
+        !query ||
+        customerLabel.includes(query) ||
+        orderId.includes(query) ||
+        address.includes(query);
 
       return matchesStatus && matchesQuery;
     });
@@ -92,29 +146,29 @@ export default function AdminOrdersPage() {
   const stats = useMemo(() => {
     const totalOrders = orders.length;
     const pending = orders.filter((o) => o.status === "pending").length;
-    const shipped = orders.filter(
-      (o) => o.status === "processing" || o.status === "shipped"
+    const inProgress = orders.filter(
+      (o) => o.status === "paid" || o.status === "processing" || o.status === "shipped"
     ).length;
-    const revenue = orders.reduce((sum, order) => sum + order.total, 0);
+    const delivered = orders.filter((o) => o.status === "delivered").length;
+    const revenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
 
-    return { totalOrders, pending, shipped, revenue };
+    return { totalOrders, pending, inProgress, delivered, revenue };
   }, [orders]);
 
   const updateStatus = async (orderId: string, status: AdminOrderStatus) => {
     try {
       setUpdatingOrderId(orderId);
 
-      const res = await request<{ success: boolean; order: AdminOrder }>(
-        `/orders/${orderId}/status`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ status }),
-        }
-      );
+      const res = await request<OrderUpdateResponse>(`/orders/${orderId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+
+      const nextStatus = res.order?.status ?? res.data?.order?.status ?? status;
 
       setOrders((prev) =>
         prev.map((order) =>
-          order._id === orderId ? { ...order, status: res.order.status } : order
+          order._id === orderId ? { ...order, status: nextStatus } : order
         )
       );
 
@@ -140,84 +194,10 @@ export default function AdminOrdersPage() {
         </Button>
       }
     >
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-white/10 bg-white/5 text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              Total Orders
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{stats.totalOrders}</CardContent>
-        </Card>
-
-        <Card className="border-white/10 bg-white/5 text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              Pending
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{stats.pending}</CardContent>
-        </Card>
-
-        <Card className="border-white/10 bg-white/5 text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              In Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{stats.shipped}</CardContent>
-        </Card>
-
-        <Card className="border-white/10 bg-white/5 text-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {formatPrice(stats.revenue)}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="border-white/10 bg-white/5 text-white">
-        <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by order ID, customer name, or email..."
-            className="border-white/10 bg-black/20 text-white placeholder:text-zinc-500"
-          />
-
-          <select
-            value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as AdminOrderStatus | "all")
-            }
-            className="h-10 rounded-xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
-          >
-            <option value="all">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </CardContent>
-      </Card>
-
       {loading ? (
         <TableSkeleton rows={6} />
       ) : error ? (
-        <ErrorState
-          error={error}
-          onAction={loadOrders}
-          actionLabel="Retry"
-        />
+        <ErrorState error={error} onAction={loadOrders} actionLabel="Retry" />
       ) : filteredOrders.length === 0 ? (
         <EmptyState
           title="No orders found"
