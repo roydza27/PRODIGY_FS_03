@@ -10,6 +10,7 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${url}`, {
     ...options,
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options?.headers || {}),
@@ -40,6 +41,7 @@ export type ShipmentStatus =
   | "cancelled";
 
 export interface ShipmentOrderSnapshot {
+  _id: string;
   items: {
     productId: string;
     name: string;
@@ -68,19 +70,35 @@ export interface Shipment {
   updatedAt: string;
 }
 
-type ShipmentsResponse = {
+export type ShipmentsResponse = {
   success: boolean;
   shipments: Shipment[];
 };
 
-type ShipmentResponse = {
+export type ShipmentResponse = {
   success: boolean;
   shipment: Shipment;
 };
 
+export type CreateShipmentPayload = {
+  orderId: string;
+  carrier: string;
+  trackingNumber: string;
+  eta: string;
+  status?: ShipmentStatus;
+};
+
 export const shipmentService = {
   getAll: () => request<ShipmentsResponse>("/shipments"),
+
   getById: (id: string) => request<ShipmentResponse>(`/shipments/${id}`),
+
+  create: (payload: CreateShipmentPayload) =>
+    request<ShipmentResponse>("/shipments", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
   updateStatus: (id: string, status: ShipmentStatus) =>
     request<ShipmentResponse>(`/shipments/${id}/status`, {
       method: "PATCH",

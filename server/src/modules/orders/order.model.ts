@@ -1,5 +1,10 @@
 import { Schema, model, type Types } from "mongoose";
-import type { OrderItemSnapshot, OrderStatus, PaymentMethod, ShippingAddress } from "./order.types";
+import type {
+  OrderItemSnapshot,
+  OrderStatus,
+  PaymentMethod,
+  ShippingAddress,
+} from "./order.types";
 
 interface OrderDocument {
   user: Types.ObjectId;
@@ -52,7 +57,19 @@ const orderSchema = new Schema<OrderDocument>(
     subtotal: { type: Number, required: true },
     total: { type: Number, required: true },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+// Shipment belongs to this order
+orderSchema.virtual("shipment", {
+  ref: "Shipment",
+  localField: "_id",
+  foreignField: "order",
+  justOne: true,
+});
 
 export const Order = model<OrderDocument>("Order", orderSchema);

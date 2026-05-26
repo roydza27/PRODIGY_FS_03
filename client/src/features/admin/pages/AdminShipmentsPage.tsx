@@ -3,18 +3,84 @@ import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import AdminPageShell from "../components/AdminPageShell";
-import ShipmentTable, { type Shipment } from "../components/ShipmentTable";
-import type { ShipmentStatus } from "../components/ShipmentStatusBadge";
+import ShipmentTable from "../components/ShipmentTable";
+import type { Shipment, ShipmentStatus } from "../services/shipment.service";
 import { formatPrice } from "@/features/products/utils/product.helpers";
 import { shipmentService } from "../services/shipment.service";
+import {
+  Filter,
+  PackageCheck,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Truck,
+  Warehouse,
+  CircleCheck,
+  Plus,
+  User,
+  ClipboardList,
+  AlertCircle,
+} from "lucide-react";
+
+const STATUS_OPTIONS = [
+  "all",
+  "pending",
+  "packed",
+  "in_transit",
+  "delivered",
+  "cancelled",
+] as const;
+
+type StatusFilter = (typeof STATUS_OPTIONS)[number];
+
+type ShipmentFormState = {
+  orderId: string;
+  carrier: string;
+  trackingNumber: string;
+  eta: string;
+  status: ShipmentStatus;
+  assignedToName: string;
+  assignedToRole: string;
+  assignedToPhone: string;
+  assignedNotes: string;
+};
+
+const EMPTY_FORM: ShipmentFormState = {
+  orderId: "",
+  carrier: "",
+  trackingNumber: "",
+  eta: "",
+  status: "pending",
+  assignedToName: "",
+  assignedToRole: "",
+  assignedToPhone: "",
+  assignedNotes: "",
+};
+
+function ShipmentSkeleton({ rows = 6 }: { rows?: number }) {
+  return (
+    <Card className="border-white/10 bg-[#18181B] shadow-xl">
+      <CardContent className="space-y-3 p-6">
+        {Array.from({ length: rows }).map((_, index) => (
+          <div key={index} className="h-14 animate-pulse rounded-2xl bg-black/20" />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function AdminShipmentsPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ShipmentStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [updatingShipmentId, setUpdatingShipmentId] = useState<string | null>(null);
+
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [creatingShipment, setCreatingShipment] = useState(false);
+  const [form, setForm] = useState<ShipmentFormState>(EMPTY_FORM);
 
   const loadShipments = async () => {
     try {
@@ -39,15 +105,19 @@ export default function AdminShipmentsPage() {
       const matchesStatus =
         statusFilter === "all" ? true : shipment.status === statusFilter;
 
-      const customerName = shipment.order?.shippingAddress?.fullName || "";
-      const orderId = shipment._id.toLowerCase();
+      const customerName = shipment.order?.shippingAddress?.fullName?.toLowerCase() ?? "";
+      const customerEmail = shipment.order?.shippingAddress?.email?.toLowerCase() ?? "";
+      const orderId = shipment.order?._id?.toLowerCase() ?? "";
+      const shipmentId = shipment._id.toLowerCase();
       const trackingNumber = shipment.trackingNumber.toLowerCase();
       const carrier = shipment.carrier.toLowerCase();
 
       const matchesQuery =
         !query ||
-        customerName.toLowerCase().includes(query) ||
+        customerName.includes(query) ||
+        customerEmail.includes(query) ||
         orderId.includes(query) ||
+        shipmentId.includes(query) ||
         trackingNumber.includes(query) ||
         carrier.includes(query);
 
@@ -60,18 +130,28 @@ export default function AdminShipmentsPage() {
     const inTransit = shipments.filter((s) => s.status === "in_transit").length;
     const packed = shipments.filter((s) => s.status === "packed").length;
     const delivered = shipments.filter((s) => s.status === "delivered").length;
+    const pending = shipments.filter((s) => s.status === "pending").length;
     const revenue = shipments.reduce((sum, shipment) => sum + (shipment.order?.total || 0), 0);
 
-    return { totalShipments, inTransit, packed, delivered, revenue };
+    return { totalShipments, inTransit, packed, delivered, pending, revenue };
   }, [shipments]);
 
-  const updateShipmentStatus = async (
-    shipmentId: string,
-    status: ShipmentStatus
-  ) => {
+  const updateShipmentStatus = async (shipmentId: string, status: ShipmentStatus) => {
+    const targetShipment = shipments.find((shipment) => shipment._id === shipmentId);
+
+    if (
+      status === "delivered" &&
+      targetShipment &&
+      (!targetShipment.carrier || targetShipment.carrier === "Not Assigned" ||
+        !targetShipment.trackingNumber ||
+        targetShipment.trackingNumber.startsWith("TBD-"))
+    ) {
+      toast.error("Assign carrier and tracking number before marking as delivered");
+      return;
+    }
+
     try {
       setUpdatingShipmentId(shipmentId);
-
       const res = await shipmentService.updateStatus(shipmentId, status);
 
       setShipments((prev) =>
@@ -88,114 +168,189 @@ export default function AdminShipmentsPage() {
     }
   };
 
+  const handleCreateShipment = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (
+      !form.orderId.trim() ||
+      !form.carrier.trim() ||
+      !form.trackingNumber.trim() ||
+      !form.eta.trim()
+    ) {
+      toast.error("Please fill in order ID, carrier, tracking number, and ETA");
+      return;
+    }
+
+    try {
+      setCreatingShipment(true);
+
+      await shipmentService.create({
+        orderId: form.orderId.trim(),
+        carrier: form.carrier.trim(),
+        trackingNumber: form.trackingNumber.trim(),
+        eta: form.eta.trim(),
+        status: form.status,
+        assignedToName: form.assignedToName.trim(),
+        assignedToRole: form.assignedToRole.trim(),
+        assignedToPhone: form.assignedToPhone.trim(),
+        assignedNotes: form.assignedNotes.trim(),
+      } as any);
+
+      toast.success("Shipment created successfully");
+      setForm(EMPTY_FORM);
+      setShowCreateForm(false);
+      await loadShipments();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create shipment");
+    } finally {
+      setCreatingShipment(false);
+    }
+  };
+
   return (
     <AdminPageShell
       title="Shipments"
-      description="Track dispatch, delivery progress, and carrier status across all orders."
+      description="Track dispatch, delivery progress, carrier status, and logistics assignment across all orders."
       actions={
-        <Button
-          onClick={loadShipments}
-          className="rounded-xl bg-red-500 hover:bg-red-600"
-        >
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={loadShipments}
+            variant="outline"
+            className="rounded-xl border-white/10 bg-black/20 text-white hover:bg-white/5"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+          <Button
+            onClick={() => setShowCreateForm((prev) => !prev)}
+            className="rounded-xl bg-[#DB4444] text-white hover:bg-[#c53a3a]"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {showCreateForm ? "Close" : "Create Shipment"}
+          </Button>
+        </div>
       }
     >
-      <div className="grid gap-4 md:grid-cols-5">
-        <Card className="border-white/10 bg-white/5 text-white md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              Shipments
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {loading ? "..." : stats.totalShipments}
-          </CardContent>
-        </Card>
+      <div className="space-y-6">
 
-        <Card className="border-white/10 bg-white/5 text-white md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              Packed
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{loading ? "..." : stats.packed}</CardContent>
-        </Card>
-
-        <Card className="border-white/10 bg-white/5 text-white md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              In Transit
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {loading ? "..." : stats.inTransit}
-          </CardContent>
-        </Card>
-
-        <Card className="border-white/10 bg-white/5 text-white md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              Delivered
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {loading ? "..." : stats.delivered}
-          </CardContent>
-        </Card>
-
-        <Card className="border-white/10 bg-white/5 text-white md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
-              Shipment Value
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {loading ? "..." : formatPrice(stats.revenue)}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="border-white/10 bg-white/5 text-white">
-        <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by customer, carrier, tracking, or order..."
-            className="border-white/10 bg-black/20 text-white placeholder:text-zinc-500"
-          />
-
-          <select
-            value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as ShipmentStatus | "all")
-            }
-            className="h-10 rounded-xl border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
-          >
-            <option value="all">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="packed">Packed</option>
-            <option value="in_transit">In Transit</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </CardContent>
-      </Card>
-
-      {loading ? (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-zinc-400">
-          Loading shipments...
+        <div className="grid text grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mx-6">
+          {[
+            {
+              label: "Packed",
+              value: stats.packed,
+              icon: PackageCheck,
+              color: "text-[#DB4444]",
+              ring: "border-[#DB4444]/20 bg-[#DB4444]/10",
+            },
+            {
+              label: "In Transit",
+              value: stats.inTransit,
+              icon: Truck,
+              color: "text-blue-300",
+              ring: "border-blue-500/20 bg-blue-500/10",
+            },
+            {
+              label: "Delivered",
+              value: stats.delivered,
+              icon: CircleCheck,
+              color: "text-emerald-300",
+              ring: "border-emerald-500/20 bg-emerald-500/10",
+            },
+            {
+              label: "Shipment Value",
+              value: loading ? "..." : formatPrice(stats.revenue),
+              icon: Warehouse,
+              color: "text-amber-300",
+              ring: "border-amber-500/20 bg-amber-500/10",
+            },
+          ].map((item) => {
+            // Capitalizing component reference locally to satisfy React JSX parsing constraints
+            const Icon = item.icon;
+            return (
+              <Card key={item.label} className="border-white/10 bg-[#18181B] shadow-xl rounded-2xl">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-xs uppercase font-semibold tracking-wider text-zinc-500 truncate">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-2xl font-bold text-white font-mono truncate">
+                        {item.value}
+                      </p>
+                    </div>
+                    <div className={`rounded-2xl border p-3 shrink-0 ${item.ring}`}>
+                      <Icon className={`h-5 w-5 ${item.color}`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-      ) : (
-        <ShipmentTable
-          shipments={filteredShipments}
-          onStatusChange={updateShipmentStatus}
-          updatingShipmentId={updatingShipmentId}
-        />
-      )}
+
+        <div className="">
+          <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+            {loading ? (
+              <ShipmentSkeleton rows={6} />
+            ) : (
+              <ShipmentTable
+                shipments={filteredShipments}
+                onStatusChange={updateShipmentStatus}
+                updatingShipmentId={updatingShipmentId}
+              />
+            )}
+          </div>
+
+          <div className="mx-6 space-y-6 lg:sticky lg:top-6 lg:self-start">
+            {/* Delivery Summary Card */}
+            <Card className="border-white/10 bg-[#18181B] text-white shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Delivery Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm text-zinc-300">
+                {[
+                  { label: "Total shipments", value: stats.totalShipments, color: "text-white" },
+                  { label: "In transit", value: stats.inTransit, color: "text-blue-300" },
+                  { label: "Packed", value: stats.packed, color: "text-[#DB4444]" },
+                  { label: "Delivered", value: stats.delivered, color: "text-emerald-300" },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 transition-colors hover:bg-white/10">
+                    <span className="text-zinc-400">{item.label}</span>
+                    <span className={`font-semibold ${item.color}`}>{item.value}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Ops Notes Card */}
+            <Card className="border-white/10 bg-[#18181B] text-white shadow-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                  <ClipboardList className="h-5 w-5 text-zinc-500" />
+                  Ops Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm text-zinc-400 ">
+                <p className="leading-relaxed">Prioritize packed shipments that have not moved to transit yet.</p>
+                
+                <div className="flex gap-3 rounded-2xl border border-[#DB4444]/20 bg-[#DB4444]/5 p-4 text-[#ffc1c1]">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#DB4444]" />
+                  <p className="text-sm font-medium leading-relaxed">
+                    Review delayed carrier updates before the next dispatch batch.
+                  </p>
+                </div>
+
+                <Button 
+                  variant="outline" 
+                  className="w-full border-white/10 bg-white/5 text-white hover:bg-white/10"
+                >
+                  View carrier performance
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </AdminPageShell>
   );
 }

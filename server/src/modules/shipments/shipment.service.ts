@@ -56,5 +56,13 @@ export async function updateShipmentStatus(id: string, status: ShipmentStatus) {
   shipment.status = status;
   await shipment.save();
 
+  if (status === "delivered" || status === "cancelled") {
+    const order = await Order.findById(shipment.order);
+    if (order) {
+      order.status = status;
+      await order.save();
+    }
+  }
+
   return shipment;
 }
