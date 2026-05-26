@@ -8,6 +8,8 @@ import cartRoutes from "@/modules/cart/cart.routes";
 import orderRoutes from "./modules/orders/order.routes";
 import shipmentRoutes from "./modules/shipments/shipment.routes";
 import supportRoutes from "./modules/support/support.routes";
+import sellerRoutes from "./modules/seller/seller.routes";
+import wishlistRoutes from "./modules/wishlist/wishlist.routes";
 
 import { errorHandler } from "@/middlewares/error.middleware";
 
@@ -35,6 +37,8 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/shipments", shipmentRoutes);
 app.use("/api/support", supportRoutes);
+app.use("/api/seller", sellerRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 // MUST BE LAST
 app.use(errorHandler);

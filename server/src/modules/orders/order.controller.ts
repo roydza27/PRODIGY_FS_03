@@ -1,20 +1,29 @@
 import type { Request, Response, NextFunction } from "express";
 import { createOrderSchema, updateOrderStatusSchema } from "./order.validation";
-import { createOrder, getOrderById, getOrdersByUser, updateOrderStatus } from "./order.service";
+import {
+  createOrder,
+  getOrderById,
+  getOrdersByUser,
+  getAllOrders,
+  updateOrderStatus,
+} from "./order.service";
 
 export async function createOrderController(req: Request, res: Response, next: NextFunction) {
   try {
     const parsed = createOrderSchema.parse(req.body);
     const userId = req.user?.userId;
 
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
-    const order = await createOrder(userId, parsed);
+    const result = await createOrder(userId, parsed);
 
     return res.status(201).json({
       success: true,
       message: "Order created successfully",
-      order,
+      order: result.order,
+      shipment: result.shipment,
     });
   } catch (error) {
     next(error);
@@ -27,6 +36,19 @@ export async function getMyOrdersController(req: Request, res: Response, next: N
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const orders = await getOrdersByUser(userId);
+
+    return res.json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getAllOrdersController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const orders = await getAllOrders();
 
     return res.json({
       success: true,
