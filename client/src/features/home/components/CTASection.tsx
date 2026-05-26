@@ -4,7 +4,7 @@ import { Button } from "@/shared/components/ui/button";
 const CTASection = () => {
   return (
     <section className="px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl text-left">
         <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#DB4444]/18 via-white/[0.04] to-transparent px-6 py-10 shadow-2xl shadow-black/20 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(219,68,68,0.18),transparent_34%)]" />
 

@@ -43,7 +43,7 @@ const categories = [
 const CategorySection = () => {
   return (
     <section className="px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 text-left">
         {/* Section Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-3">

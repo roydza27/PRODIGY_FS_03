@@ -39,7 +39,7 @@ const products = [
 const FeaturedProductsSection = () => {
   return (
     <section className="px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 text-left">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.24em] text-zinc-400">

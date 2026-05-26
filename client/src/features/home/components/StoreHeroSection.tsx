@@ -1,6 +1,7 @@
 import { ArrowRight, Search, ShoppingBag, Star } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { Link } from "react-router-dom";
 
 const StoreHeroSection = () => {
   return (
@@ -8,10 +9,10 @@ const StoreHeroSection = () => {
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.35fr_0.9fr]">
         <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-transparent p-6 shadow-2xl shadow-black/30 sm:p-8 lg:p-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(219,68,68,0.16),transparent_32%)]" />
-          <div className="relative z-10 flex flex-col gap-8">
+          <div className="relative z-10 flex flex-col gap-8 text-left">
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium tracking-wide text-zinc-300">
               <ShoppingBag className="h-3.5 w-3.5 text-[#DB4444]" />
-              Local Store E-commerce Platform
+              Zynta E-commerce Platform
             </div>
 
             <div className="max-w-2xl space-y-5">
@@ -34,13 +35,16 @@ const StoreHeroSection = () => {
                   className="h-14 rounded-2xl border-white/10 bg-black/30 pl-11 text-base text-white placeholder:text-zinc-500 focus-visible:ring-[#DB4444]"
                 />
               </div>
-              <Button className="h-14 rounded-2xl bg-[#DB4444] px-6 text-white hover:bg-[#c53a3a]">
-                Browse Products
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link to={"/products"}>
+                <Button className="h-14 rounded-2xl bg-[#DB4444] px-6 text-white hover:bg-[#c53a3a]">
+                  Browse Products
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-3 text-">
               {[
                 { label: "Fast checkout", value: "1-click cart flow" },
                 { label: "Trusted store", value: "Quality local products" },
@@ -60,7 +64,7 @@ const StoreHeroSection = () => {
           </div>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 text-left">
           <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#17171b] p-6 shadow-2xl shadow-black/20 sm:p-8">
             <div className="flex items-center justify-between">
               <div>

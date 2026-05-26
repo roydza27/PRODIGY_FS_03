@@ -35,7 +35,7 @@ const highlights = [
 const StoreHighlightsSection = () => {
   return (
     <section className="px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10">
+      <div className="mx-auto flex max-w-7xl flex-col text-left gap-10">
         {/* Section Header */}
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.24em] text-zinc-400">

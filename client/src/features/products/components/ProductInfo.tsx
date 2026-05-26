@@ -1,4 +1,7 @@
 import { Heart } from "lucide-react";
+
+import { Button } from "@/shared/components/ui/button";
+
 import ProductRating from "./ProductRating";
 
 interface Props {
@@ -11,6 +14,7 @@ interface Props {
   inStock?: boolean;
   isWishlisted?: boolean;
   onWishlistToggle?: () => void;
+  wishlistLoading?: boolean;
 }
 
 export default function ProductInfo({
@@ -23,35 +27,43 @@ export default function ProductInfo({
   inStock = true,
   isWishlisted = false,
   onWishlistToggle,
+  wishlistLoading = false,
 }: Props) {
   return (
     <div className="flex flex-col gap-5">
       {/* Category + Wishlist row */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          {category && (
+          {category ? (
             <span className="inline-block rounded-md border border-white/8 bg-white/5 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
               {category}
             </span>
-          )}
-          <h1 className="mt-2.5 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-[2rem] leading-tight">
+          ) : null}
+
+          <h1 className="mt-2.5 text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl lg:text-[2rem]">
             {name}
           </h1>
         </div>
 
-        <button
-          type="button"
-          onClick={onWishlistToggle}
-          aria-label="Toggle wishlist"
-          className={[
-            "mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-all duration-200",
-            isWishlisted
-              ? "border-red-500/50 bg-red-500/10 text-red-400"
-              : "border-white/10 bg-white/4 text-zinc-400 hover:border-white/20 hover:text-white",
-          ].join(" ")}
-        >
-          <Heart className={["h-4.5 w-4.5", isWishlisted ? "fill-red-400" : ""].join(" ")} />
-        </button>
+        {onWishlistToggle ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onWishlistToggle}
+            disabled={wishlistLoading}
+            className={[
+              "h-12 rounded-xl border-white/10 bg-black/20 text-white hover:bg-white/5",
+              isWishlisted ? "border-red-500/40 text-red-400" : "",
+            ].join(" ")}
+          >
+            <Heart
+              className={`mr-2 h-4 w-4 ${
+                isWishlisted ? "fill-red-500 text-red-500" : ""
+              }`}
+            />
+            {isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          </Button>
+        ) : null}
       </div>
 
       {/* Rating + stock */}

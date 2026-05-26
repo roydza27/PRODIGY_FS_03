@@ -112,8 +112,8 @@ const features = [
 
 export default function FeaturesSection() {
   return (
-    <section className="px-4 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-7xl">
+    <section className="px-4 py-20 md:px-8 md:py-28 text-left">
+      <div className="mx-auto max-w-7xl ">
 				<div className="mx-auto mb-12 flex max-w-3xl flex-col items-center text-center md:mb-16">
 					<h2 className="mb-5 font-heading text-[clamp(2rem,5vw,4rem)] font-bold tracking-tight leading-[0.95] leading-tight text-[#FAFAFA] md:text-4xl">
 						Work Easier Today

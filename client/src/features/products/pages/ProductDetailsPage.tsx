@@ -1,10 +1,16 @@
 import { useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Heart, Copy } from "lucide-react";
+
+import { Button } from "@/shared/components/ui/button";
+
 import { useProduct } from "../hooks/useProduct";
 import { useProducts } from "../hooks/useProducts";
 import { useCart } from "@/features/cart/context/CartContext";
+import { useAuthStore } from "@/app/store/auth.store";
+import { useWishlist } from "@/features/wishlist/context/WishlistContext";
 import { formatPrice, getProductImage } from "../utils/product.helpers";
-import { toast } from "sonner";
 
 import ProductBreadcrumb from "../components/ProductBreadcrumb";
 import ProductImageGallery from "../components/ProductImageGallery";
@@ -13,31 +19,30 @@ import ProductOptions from "../components/ProductOptions";
 import ProductActions from "../components/ProductActions";
 import ProductDeliveryInfo from "../components/ProductDeliveryInfo";
 import RelatedProducts from "../components/RelatedProducts";
-import ProductHighlights from "@/features/products/components/ProductHighlights";
 import ProductSpecifications from "@/features/products/components/ProductSpecifications";
 import ProductReviews from "@/features/products/components/ProductReviews";
 import ProductFAQ from "@/features/products/components/ProductFAQ";
 
-const SIZES = ["XS", "S", "M", "L", "XL"];
-
-const COLORS = [
-  { id: "blue", hex: "#A0BCE0", label: "Blue" },
-  { id: "red", hex: "#E07575", label: "Red" },
-  { id: "green", hex: "#A9D18E", label: "Green" },
-];
-
 export default function ProductDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const { addToCart } = useCart();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { toggleWishlist, isWishlisted } = useWishlist();
 
   const { product, loading, error } = useProduct(id ?? "");
   const { products } = useProducts();
+
+  const productColors = product && "colors" in product ? product.colors ?? [] : [];
+  const productSizes = product && "sizes" in product ? product.sizes ?? [] : [];
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState("red");
   const [cartLoading, setCartLoading] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [copyingId, setCopyingId] = useState(false);
 
   const images = useMemo(() => {
     if (!product) return [];
@@ -72,7 +77,14 @@ export default function ProductDetailsPage() {
   ];
 
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to add items to your cart");
+      navigate("/login");
+      return;
+    }
+
     if (!product) return;
+
     setCartLoading(true);
     try {
       await addToCart(product, quantity);
@@ -84,77 +96,138 @@ export default function ProductDetailsPage() {
     }
   };
 
-  const handleBuyNow = () => {
-    toast.info("Redirecting to checkout…");
+  const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to proceed to checkout");
+      navigate("/login");
+      return;
+    }
+
+    if (!product) return;
+
+    setCartLoading(true);
+    try {
+      await addToCart(product, quantity);
+      navigate("/checkout");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to process order");
+      setCartLoading(false);
+    }
+  };
+
+  const handleWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to save items to your wishlist");
+      navigate("/login");
+      return;
+    }
+
+    if (!product) return;
+
+    try {
+      setWishlistLoading(true);
+      const alreadySaved = isWishlisted(product._id);
+      toggleWishlist(product);
+      toast.success(alreadySaved ? "Removed from wishlist" : "Added to wishlist");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const handleCopyId = async () => {
+    if (!product) return;
+
+    try {
+      setCopyingId(true);
+      await navigator.clipboard.writeText(product._id);
+      toast.success("Product ID copied");
+    } catch {
+      toast.error("Failed to copy product ID");
+    } finally {
+      setCopyingId(false);
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#111113] px-4 py-10 text-white md:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 xl:grid-cols-2">
-            <div className="aspect-square animate-pulse rounded-3xl bg-white/5" />
-            <div className="animate-pulse rounded-3xl bg-white/5 p-8">
-              <div className="flex flex-col gap-4">
-                {[40, 28, 20, 16, 16].map((h, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg bg-white/8"
-                    style={{
-                      height: h,
-                      width: i === 0 ? "70%" : i === 2 ? "40%" : "90%",
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
+      <div className="min-h-screen bg-[#111113] text-white">
+        <main className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4">
+          <div className="rounded-2xl border border-white/10 bg-white/3 px-6 py-4 text-sm text-zinc-300">
+            Loading product...
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#111113] px-4 text-center">
-        <div className="rounded-3xl border border-red-500/20 bg-red-500/5 p-10 text-red-300">
-          <p className="text-lg font-semibold">Product not found</p>
-          <p className="mt-2 text-sm text-red-400/60">{error}</p>
-          <button
-            onClick={() => navigate("/products")}
-            className="mt-6 rounded-xl bg-red-500/20 px-6 py-2 text-sm font-medium text-red-300 transition hover:bg-red-500/30"
-          >
-            Back to Products
-          </button>
-        </div>
+      <div className="min-h-screen bg-[#111113] text-white">
+        <main className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4">
+          <div className="rounded-2xl border border-white/10 bg-white/3 p-6 text-center">
+            <h1 className="text-xl font-semibold">Product not found</h1>
+            <p className="mt-2 text-sm text-zinc-400">
+              {error ? "Failed to load product details." : "This product no longer exists."}
+            </p>
+            <Button
+              className="mt-4"
+              onClick={() => navigate("/products")}
+            >
+              Back to products
+            </Button>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#111113] text-white">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12 text-left">
         <ProductBreadcrumb crumbs={breadcrumbs} />
 
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] xl:gap-12">
           <ProductImageGallery images={images} productName={product.name} />
 
           <div className="flex flex-col gap-6 rounded-3xl border border-white/8 bg-white/[0.025] p-6 sm:p-7 lg:p-9">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium tracking-wide text-zinc-300">
+                ID: <span className="font-mono">{product._id}</span>
+              </span>
+
+              <button
+                type="button"
+                onClick={handleCopyId}
+                className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[10px] font-medium text-zinc-300 transition hover:bg-white/5"
+              >
+                <Copy className="h-3 w-3" />
+                {copyingId ? "Copying..." : "Copy ID"}
+              </button>
+
+              {product.isFeatured ? (
+                <span className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-red-400">
+                  Featured
+                </span>
+              ) : null}
+            </div>
+
             <ProductInfo
               name={product.name}
               category={product.category}
               price={formatPrice(product.price)}
               description={product.description}
-              rating={4}
-              reviewCount={150}
-              inStock={true}
+              rating={product.rating ?? 0}
+              reviewCount={product.reviewCount ?? 0}
+              inStock={(product.stock ?? 0) > 0}
+              isWishlisted={isWishlisted(product._id)}
+              onWishlistToggle={handleWishlist}
             />
 
             <ProductOptions
-              colors={COLORS}
+              colors={productColors}
               selectedColor={selectedColor}
               onColorChange={setSelectedColor}
-              sizes={SIZES}
+              sizes={productSizes}
               selectedSize={selectedSize}
               onSizeChange={setSelectedSize}
             />
@@ -168,12 +241,26 @@ export default function ProductDetailsPage() {
               loading={cartLoading}
             />
 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleWishlist}
+              disabled={wishlistLoading}
+              className="h-12 rounded-xl border-white/10 bg-black/20 text-white hover:bg-white/5"
+            >
+              <Heart
+                className={`mr-2 h-4 w-4 ${
+                  isWishlisted(product._id) ? "fill-red-500 text-red-500" : ""
+                }`}
+              />
+              {isWishlisted(product._id) ? "Remove from wishlist" : "Add to wishlist"}
+            </Button>
+
             <ProductDeliveryInfo />
           </div>
         </div>
 
         <div className="mt-8 space-y-8 lg:mt-10 lg:space-y-10">
-
           <ProductSpecifications
             specs={[
               { label: "Material", value: "Premium alloy and reinforced polymer" },
@@ -186,9 +273,7 @@ export default function ProductDetailsPage() {
           />
 
           <ProductReviews averageRating={4.5} reviewCount={128} />
-
           <ProductFAQ />
-
           <RelatedProducts products={relatedItems} formatPrice={formatPrice} />
         </div>
       </main>
