@@ -11,6 +11,27 @@ export type ProductCategory =
 
 export type ProductStatus = "draft" | "active" | "archived";
 
+export interface ProductQuery {
+  search?: string;
+  category?: string;
+  featured?: string;
+  status?: string;
+  sort?: string;
+  page?: string;
+  limit?: string;
+  sellerId?: string; // Filter products by seller
+}
+
+export type SpecificationItem = {
+  label: string;
+  value: string;
+};
+
+export type FAQItem = {
+  question: string;
+  answer: string;
+};
+
 export interface ProductInput {
   name: string;
   slug?: string;
@@ -22,16 +43,7 @@ export interface ProductInput {
   images: string[];
   isFeatured?: boolean;
   status?: ProductStatus;
-  sellerId?: string; // Optional - auto-assigned from request user for sellers
-}
-
-export interface ProductQuery {
-  search?: string;
-  category?: string;
-  featured?: string;
-  status?: string;
-  sort?: string;
-  page?: string;
-  limit?: string;
-  sellerId?: string; // Filter products by seller
+  sellerId?: string;
+  specifications?: SpecificationItem[];
+  faqs?: FAQItem[];
 }

@@ -7,7 +7,7 @@ import ProductForm, {
   type ProductFormValues,
 } from "@/features/products/components/ProductForm";
 import { useAdminProducts } from "../hooks/use-admin-products";
-import type { ProductCategory } from "../services/product.service";
+import type { ProductCategory } from "@/features/products/components/ProductForm";
 
 const initialFormData: ProductFormValues = {
   name: "",
@@ -19,6 +19,8 @@ const initialFormData: ProductFormValues = {
   images: [],
   status: "draft",
   isFeatured: false,
+  specifications: [{ label: "", value: "" }],
+  faqs: [{ question: "", answer: "" }],
 };
 
 export default function AdminProductFormPage() {
@@ -40,6 +42,7 @@ export default function AdminProductFormPage() {
         setIsLoadingProduct(true);
         const prod = await getProduct(id);
 
+
         setInitialValues({
           name: prod.name || "",
           description: prod.description || "",
@@ -50,6 +53,8 @@ export default function AdminProductFormPage() {
           images: prod.images || [],
           status: prod.status || "draft",
           isFeatured: prod.isFeatured || false,
+          specifications: prod.specifications || [],
+          faqs: prod.faqs || [],
         });
       } catch {
         toast.error("Failed to load historical product parameters");

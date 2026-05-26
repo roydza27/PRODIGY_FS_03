@@ -15,7 +15,7 @@ import type { ProductCategory } from "../services/seller-product.service";
 
 type ProductFormState = ProductFormValues;
 
-const initialFormData: ProductFormState = {
+const initialFormData: ProductFormValues = {
   name: "",
   description: "",
   price: 0,
@@ -25,6 +25,8 @@ const initialFormData: ProductFormState = {
   images: [],
   status: "draft",
   isFeatured: false,
+  specifications: [{ label: "", value: "" }],
+  faqs: [{ question: "", answer: "" }],
 };
 
 export default function SellerProductFormPage() {
@@ -55,8 +57,16 @@ export default function SellerProductFormPage() {
           stock: prod.stock || 0,
           category: (prod.category as ProductCategory) || "electronics",
           images: prod.images || [],
-          status: (prod.status as ProductStatus) || "draft",
+          status: prod.status || "draft",
           isFeatured: prod.isFeatured || false,
+          specifications:
+            prod.specifications?.length
+              ? prod.specifications
+              : [{ label: "", value: "" }],
+          faqs:
+            prod.faqs?.length
+              ? prod.faqs
+              : [{ question: "", answer: "" }],
         });
       } catch {
         toast.error("Failed to load product documentation profile");

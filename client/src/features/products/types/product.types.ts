@@ -19,6 +19,16 @@ interface ProductColor {
   label?: string;
 }
 
+export type SpecificationItem = {
+  label: string;
+  value: string;
+};
+
+export type FAQItem = {
+  question: string;
+  answer: string;
+};
+
 export interface ProductBase {
   _id: string;
   name: string;
@@ -34,6 +44,8 @@ export interface ProductBase {
   images?: ProductImage[];
   isFeatured?: boolean;
   status?: ProductStatus;
+  specifications?: SpecificationItem[];
+  faqs?: FAQItem[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -79,8 +91,3 @@ export interface ProductResponse {
   message?: string;
   product: Product;
 }
-
-export type FAQItem = {
-  question: string;
-  answer: string;
-};

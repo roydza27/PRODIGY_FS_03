@@ -55,8 +55,9 @@ export async function getProductById(id: string) {
   return Product.findById(id).populate("sellerId", "name shopName");
 }
 
-export async function updateProduct(id: string, payload: ProductInput) {
-  return Product.findByIdAndUpdate(id, payload, { new: true }).populate("sellerId", "name shopName");
+export async function updateProduct(id: string, payload: Partial<ProductInput>) {
+  return Product.findByIdAndUpdate(id, payload, { new: true })
+    .populate("sellerId", "name shopName");
 }
 
 export async function deleteProduct(id: string) {

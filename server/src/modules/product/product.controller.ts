@@ -11,7 +11,7 @@ import {
   getSellerProductStats,
   verifyProductOwnership,
 } from "./product.service";
-import AppError from "@/utils/AppError";
+import { AppError } from "@/utils/AppError";
 
 export async function handleCreateProduct(
   req: Request,

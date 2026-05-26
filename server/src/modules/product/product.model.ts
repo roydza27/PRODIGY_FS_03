@@ -1,5 +1,21 @@
 import { Schema, model, type InferSchemaType } from "mongoose";
 
+const specificationSchema = new Schema(
+  {
+    label: { type: String, required: true, trim: true },
+    value: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
+const faqSchema = new Schema(
+  {
+    question: { type: String, required: true, trim: true },
+    answer: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const productSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -41,6 +57,8 @@ const productSchema = new Schema(
     // Rating and reviews
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0, min: 0 },
+    specifications: { type: [specificationSchema], default: [] },
+    faqs: { type: [faqSchema], default: [] },
   },
   { timestamps: true }
 );
