@@ -32,6 +32,15 @@ const productSchema = new Schema(
       default: "active",
       index: true,
     },
+    // Seller ownership - links product to a seller/user
+    sellerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
+    // Rating and reviews
+    rating: { type: Number, default: 0, min: 0, max: 5 },
+    reviewCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

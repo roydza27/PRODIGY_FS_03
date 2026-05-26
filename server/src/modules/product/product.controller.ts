@@ -5,7 +5,13 @@ import {
   getProductById,
   getProducts,
   updateProduct,
+  getProductsBySeller,
+  updateSellerProduct,
+  deleteSellerProduct,
+  getSellerProductStats,
+  verifyProductOwnership,
 } from "./product.service";
+import AppError from "@/utils/AppError";
 
 export async function handleCreateProduct(
   req: Request,
@@ -115,6 +121,165 @@ export async function handleDeleteProduct(
       message: "Product deleted successfully",
     });
   } catch (error) {
+    next(error);
+  }
+}
+
+// ============================================
+// SELLER-SPECIFIC PRODUCT HANDLERS
+// ============================================
+
+/**
+ * Create a product as a seller
+ * Automatically assigns the current user as the seller
+ */
+export async function handleCreateSellerProduct(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const product = await createProduct({
+      ...req.body,
+      sellerId: req.user.userId, // Auto-assign current user as seller
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get all products for the current seller
+ */
+export async function handleGetSellerProducts(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const result = await getProductsBySeller(req.user.userId, req.query);
+
+    res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get product statistics for the current seller
+ */
+export async function handleGetSellerProductStats(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const stats = await getSellerProductStats(req.user.userId);
+
+    res.json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Update a product as a seller (with ownership check)
+ */
+export async function handleUpdateSellerProduct(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const productId = String(req.params.id);
+    const product = await updateSellerProduct(productId, req.user.userId, req.body);
+
+    res.json({
+      success: true,
+      message: "Product updated successfully",
+      product,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+}
+
+/**
+ * Delete a product as a seller (with ownership check)
+ */
+export async function handleDeleteSellerProduct(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const productId = String(req.params.id);
+    await deleteSellerProduct(productId, req.user.userId);
+
+    res.json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
     next(error);
   }
 }

@@ -22,6 +22,7 @@ export interface ProductInput {
   images: string[];
   isFeatured?: boolean;
   status?: ProductStatus;
+  sellerId?: string; // Optional - auto-assigned from request user for sellers
 }
 
 export interface ProductQuery {
@@ -32,4 +33,5 @@ export interface ProductQuery {
   sort?: string;
   page?: string;
   limit?: string;
+  sellerId?: string; // Filter products by seller
 }
