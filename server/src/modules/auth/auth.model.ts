@@ -1,4 +1,4 @@
-import { Schema, model, models, Types } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 const userSchema = new Schema(
   {
@@ -18,8 +18,39 @@ const userSchema = new Schema(
 
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: 6,
+      // FIXED: When password is not required (e.g., Google users), Mongoose still tries 
+      // to validate minlength on undefined/null values. Adding a custom validator avoids this.
+      validate: {
+        validator: function (v: string) {
+          // Only validate length if a password string is actually being provided
+          return !v || v.length >= 6;
+        },
+        message: "Password must be at least 6 characters long",
+      },
+    },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+      required: true,
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Perfect! This keeps your null entries from throwing indexing errors
+      trim: true,
+    },
+
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
     },
 
     role: {
@@ -28,7 +59,6 @@ const userSchema = new Schema(
       default: "user",
     },
 
-    // Seller workflow tracking
     sellerStatus: {
       type: String,
       enum: ["none", "applied", "approved", "rejected", "suspended"],
@@ -40,52 +70,42 @@ const userSchema = new Schema(
         type: String,
         trim: true,
       },
-
       shopDescription: {
         type: String,
         trim: true,
       },
-
       businessEmail: {
         type: String,
         trim: true,
         lowercase: true,
       },
-
       businessPhone: {
         type: String,
         trim: true,
       },
-
       bankAccountName: {
         type: String,
         trim: true,
       },
-
       bankAccountNumber: {
         type: String,
         trim: true,
       },
-
       bankCode: {
         type: String,
-        trim: true,
+        trim: true, // Useful fallback if your platform validates IFSC codes
       },
-
       businessRegistration: {
         type: String,
         trim: true,
       },
-
       gstNumber: {
         type: String,
         trim: true,
       },
-
       coverImage: {
         type: String,
       },
-
       profileImage: {
         type: String,
       },

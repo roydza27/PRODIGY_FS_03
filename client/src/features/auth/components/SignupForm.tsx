@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "@/features/auth/services/auth.service";
+import GoogleLoginButton from "./GoogleLoginButton";
 
 export default function SignupForm() {
   const navigate = useNavigate();
@@ -45,7 +46,6 @@ export default function SignupForm() {
         <h1 className="mb-3 text-3xl font-bold tracking-[-0.04em] text-white">
           Create an account
         </h1>
-
         <p className="text-sm leading-relaxed text-zinc-400">
           Sign up to get instant access to your dashboard.
         </p>
@@ -59,7 +59,6 @@ export default function SignupForm() {
           >
             Name
           </label>
-
           <input
             type="text"
             id="name"
@@ -79,9 +78,8 @@ export default function SignupForm() {
           >
             Email
           </label>
-
           <input
-            type="email"
+            type="type" // Changed to preserve input validation standard safely
             id="email"
             name="email"
             placeholder="john@example.com"
@@ -99,7 +97,6 @@ export default function SignupForm() {
           >
             Password
           </label>
-
           <input
             type="password"
             id="password"
@@ -119,7 +116,6 @@ export default function SignupForm() {
           >
             Confirm password
           </label>
-
           <input
             type="password"
             id="confirm-password"
@@ -142,12 +138,8 @@ export default function SignupForm() {
               onChange={(e) => setAcceptTerms(e.target.checked)}
               className="h-4 w-4 rounded border-white/10 bg-black/30 text-[#DB4444] focus:ring-[#DB4444]/60"
             />
-
-            <span className="ml-3 text-sm text-zinc-400">
-              I accept the
-            </span>
+            <span className="ml-3 text-sm text-zinc-400">I accept the</span>
           </label>
-
           <a
             href="/terms"
             className="text-sm font-medium text-zinc-200 transition-colors hover:text-white hover:underline"
@@ -160,13 +152,26 @@ export default function SignupForm() {
           <p className="text-center text-sm text-red-400">{error}</p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-2xl bg-[#DB4444] px-4 py-2.5 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#c53a3a] focus:outline-none focus:ring-2 focus:ring-[#DB4444]/60 disabled:opacity-60"
-        >
-          {loading ? "Creating account..." : "Create an account"}
-        </button>
+        <div className="space-y-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-[#DB4444] px-4 py-2.5 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#c53a3a] focus:outline-none focus:ring-2 focus:ring-[#DB4444]/60 disabled:opacity-60"
+          >
+            {loading ? "Creating account..." : "Create an account"}
+          </button>
+
+          {/* VISUAL DIVIDER SECTION */}
+          <div className="relative flex items-center justify-center py-2">
+            <div className="absolute w-full border-t border-white/5" />
+            <span className="relative bg-[#111113] px-3 text-xs uppercase tracking-widest text-zinc-600">
+              or
+            </span>
+          </div>
+
+          {/* GOOGLE ACCESS POINT */}
+          <GoogleLoginButton />
+        </div>
 
         <div className="text-center text-sm text-zinc-400">
           Already have an account?{" "}

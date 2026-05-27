@@ -10,6 +10,8 @@ import PublicOnlyRoute from "@/app/router/PublicOnlyRoute";
 
 import LoginPage from "@/features/auth/pages/LoginPage";
 import RegisterPage from "@/features/auth/pages/RegisterPage";
+import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage";
+import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage";
 
 import AccountHomePage from "@/features/account/pages/AccountHomePage";
 import AccountOrdersPage from "@/features/account/pages/AccountOrdersPage";
@@ -73,6 +75,8 @@ const AppRouter = () => {
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgotPassword" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
           </Route>
         </Route>
 
