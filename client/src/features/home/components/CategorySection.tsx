@@ -6,6 +6,8 @@ import {
   ShoppingBasket,
   Gamepad2,
 } from "lucide-react";
+// 1. Import Link from your router ecosystem
+import { Link } from "react-router-dom";
 
 const categories = [
   {
@@ -63,9 +65,12 @@ const CategorySection = () => {
             </div>
           </div>
 
-          <button className="w-fit rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-zinc-200 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06]">
-            View all categories
-          </button>
+          {/* Connected the header action to view the full un-filtered catalog */}
+          <Link to="/products">
+            <button className="w-fit rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-zinc-200 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06]">
+              View all categories
+            </button>
+          </Link>
         </div>
 
         {/* Categories Grid */}
@@ -74,20 +79,23 @@ const CategorySection = () => {
             const Icon = category.icon;
 
             return (
-              <div
+              /* 2. Convert card div wrapper to a standard Link component target */
+              <Link
                 key={category.title}
-                className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05]"
+                // Appends the raw title parameters directly to your existing catalog matchers
+                to={`/products?category=${encodeURIComponent(category.title)}`}
+                className="group relative block overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05]"
               >
-                {/* Glow */}
+                {/* Glow Accent Profile */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(219,68,68,0.12),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                 <div className="relative z-10 flex flex-col gap-6">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30">
-                    <Icon className="h-6 w-6 text-zinc-100" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 transition-colors group-hover:border-[#DB4444]/30 group-hover:bg-[#DB4444]/5">
+                    <Icon className="h-6 w-6 text-zinc-100 transition-colors group-hover:text-[#DB4444]" />
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className="text-lg font-semibold text-white group-hover:text-[#DB4444] transition-colors">
                       {category.title}
                     </h3>
 
@@ -96,7 +104,7 @@ const CategorySection = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

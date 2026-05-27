@@ -5,12 +5,17 @@ import PromoBannerSection from "@/features/home/components/PromoBannerSection";
 import StoreHighlightsSection from "@/features/home/components/StoreHighlightsSection";
 import CTASection from "@/features/home/components/CTASection";
 
+import { useProducts } from "@/features/products/hooks/useProducts";
+
 const HomePage = () => {
+  const { products, loading, error } = useProducts();
+
   return (
     <div className="min-h-screen bg-[#111113] text-zinc-100">
       <main className="flex flex-col overflow-hidden">
         <section id="hero" className="pt-4 scroll-mt-24">
-          <StoreHeroSection />
+          {/* PASS PROPS HERE */}
+          <StoreHeroSection products={products} isLoading={loading} />
         </section>
 
         <section id="categories" className="pt-24 md:pt-32 scroll-mt-24">
@@ -18,7 +23,7 @@ const HomePage = () => {
         </section>
 
         <section id="featured-products" className="pt-24 md:pt-32 scroll-mt-24">
-          <FeaturedProductsSection />
+          <FeaturedProductsSection products={products} />
         </section>
 
         <section id="promo-banner" className="pt-24 md:pt-32 scroll-mt-24">
