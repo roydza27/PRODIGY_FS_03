@@ -157,15 +157,17 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="mt-auto flex items-end justify-between gap-4">
           <div className="flex flex-col gap-0.5">
+            {/* FIXED OLD PRICE FORMATTING */}
             {product.compareAtPrice ? (
               <span className="text-xs font-medium text-zinc-500 line-through">
-                ₹{product.compareAtPrice}
+                ₹{Number(product.compareAtPrice).toLocaleString("en-IN")}
               </span>
             ) : (
               <span className="h-4" />
             )}
+            {/* FIXED CURRENT PRICE FORMATTING */}
             <span className="text-xl font-bold text-white sm:text-2xl">
-              ₹{product.price}
+              ₹{Number(product.price).toLocaleString("en-IN")}
             </span>
             <span className="text-[10px] text-zinc-500">
               {product.stock ?? 0} in stock

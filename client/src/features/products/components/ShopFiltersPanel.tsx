@@ -1,15 +1,18 @@
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   IconDiscount2,
   IconSparkles,
   IconTag,
   IconTruck,
+  IconTrash,
+  IconChevronDown,
 } from "@tabler/icons-react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import ProductSearchBar from "./ProductSearchBar";
-import ProductSortSelect from "./ProductSortSelect";
 
 type SortValue = "newest" | "price-asc" | "price-desc" | "name-asc";
 type PriceValue = "" | "budget" | "mid" | "premium";
@@ -19,33 +22,48 @@ const categories = [
   { label: "All Categories", value: "" },
   { label: "Electronics", value: "electronics" },
   { label: "Fashion", value: "fashion" },
-  { label: "Home", value: "home" },
-  { label: "Beauty", value: "beauty" },
-  { label: "Sports", value: "sports" },
-  { label: "Books", value: "books" },
+  { label: "Home & Living", value: "home" },
+  { label: "Groceries", value: "groceries" },
+  { label: "Gaming", value: "gaming" },
+  { label: "Health & Beauty", value: "beauty" },
 ];
 
 const quickFilters = [
-  { key: "inStock", label: "In stock", icon: IconTag },
-  { key: "onSale", label: "On sale", icon: IconDiscount2 },
-  { key: "freeShipping", label: "Free shipping", icon: IconTruck },
+  { key: "inStock", label: "In Stock", icon: IconTag },
+  { key: "onSale", label: "On Sale", icon: IconDiscount2 },
+  { key: "freeShipping", label: "Free Shipping", icon: IconTruck },
 ] as const;
 
 const priceBands: Array<{ label: string; value: PriceValue }> = [
-  { label: "Any price", value: "" },
+  { label: "Any Price", value: "" },
   { label: "Under ₹2,000", value: "budget" },
   { label: "₹2,000 - ₹5,000", value: "mid" },
-  { label: "₹5,000+", value: "premium" },
+  { label: "Over ₹5,000", value: "premium" },
 ];
 
 const ratings: Array<{ label: string; value: RatingValue }> = [
-  { label: "Any rating", value: "" },
+  { label: "Any Rating", value: "" },
   { label: "4.0+ Stars", value: "4" },
   { label: "4.5+ Stars", value: "4.5" },
 ];
 
+// Unified Sort Options Data Mapping Table Array
+const sortOptions = [
+  { label: "Newest Arrivals", value: "newest" },
+  { label: "Price: Low to High", value: "price-asc" },
+  { label: "Price: High to Low", value: "price-desc" },
+  { label: "Name: A to Z", value: "name-asc" },
+];
+
 export default function ShopFiltersPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Component Accordion Toggle States matching your visual layout image bounds
+  const [catOpen, setCatOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
+  const [ratingOpen, setRatingOpen] = useState(false);
+  // ADDED: Added sorting menu anchor state toggler
+  const [sortOpen, setSortOpen] = useState(false);
 
   const search = searchParams.get("q") || "";
   const category = searchParams.get("category") || "";
@@ -56,6 +74,15 @@ export default function ShopFiltersPanel() {
   const inStock = searchParams.get("inStock") === "1";
   const onSale = searchParams.get("onSale") === "1";
   const freeShipping = searchParams.get("freeShipping") === "1";
+
+  const hasActiveFilters = Array.from(searchParams.keys()).length > 0;
+
+  // Active Label Track Lookups for Dropdown Preview Windows
+  const activeCategoryLabel = categories.find(c => c.value === category)?.label || "All Categories";
+  const activePriceLabel = priceBands.find(p => p.value === price)?.label || "Any Price";
+  const activeRatingLabel = ratings.find(r => r.value === rating)?.label || "Any Rating";
+  // ADDED: Sorting presentation text locator
+  const activeSortLabel = sortOptions.find(o => o.value === sortBy)?.label || "Newest Arrivals";
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -76,33 +103,45 @@ export default function ShopFiltersPanel() {
   };
 
   return (
-    <Card className="border-white/10 bg-[#111113] text-white">
-      <CardHeader className="border-b border-white/10 pb-4">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold">
-          <IconSparkles className="size-4 text-[#DB4444]" />
-          Filters & sorting
+    <Card className="border-white/5 bg-[#141416]/95 text-white shadow-2xl backdrop-blur-xl rounded-[24px]">
+      <CardHeader className="border-b border-white/5 pb-4">
+        <CardTitle className="flex items-center justify-between text-sm font-medium tracking-wide uppercase text-zinc-400">
+          <div className="flex items-center gap-2">
+            <IconSparkles className="size-4 text-[#DB4444]" />
+            <span>Filters & Sorting</span>
+          </div>
+          {hasActiveFilters && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onClick={clearFilters}
+              className="text-xs font-normal lowercase tracking-normal text-zinc-500 hover:text-[#DB4444] transition-colors"
+            >
+              reset
+            </motion.button>
+          )}
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-6 pt-6">
-        {/* Search */}
-        <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-            Search
+      <CardContent className="space-y-5 pt-5">
+        {/* Search Input Matrix */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">
+            Search Catalog
           </p>
           <ProductSearchBar
             value={search}
             onChange={(value) => setParam("q", value)}
-            placeholder="Search catalog..."
+            placeholder="Type query name..."
           />
         </div>
 
-        {/* Quick Filters */}
-        <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+        {/* Status Quick Filters Toggle Block */}
+        <div className="space-y-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">
             Quick Status
           </p>
-          <div className="grid gap-2">
+          <div className="flex flex-col gap-1.5">
             {quickFilters.map((item) => {
               const active =
                 item.key === "inStock"
@@ -114,141 +153,236 @@ export default function ShopFiltersPanel() {
               const Icon = item.icon;
 
               return (
-                <button
+                <motion.button
                   key={item.key}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => toggleParam(item.key)}
                   className={[
-                    "flex items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm transition-all",
+                    "flex items-center gap-3 rounded-xl border p-2 text-left text-xs transition-all relative overflow-hidden",
                     active
-                      ? "border-[#DB4444]/30 bg-[#DB4444]/10 text-[#DB4444]"
-                      : "border-white/5 bg-transparent text-zinc-400 hover:border-white/10 hover:bg-white/5 hover:text-white",
+                      ? "border-[#DB4444]/30 bg-[#DB4444]/5 text-white font-medium shadow-[0_0_20px_rgba(219,68,68,0.05)]"
+                      : "border-white/5 bg-transparent text-zinc-400 hover:border-white/10 hover:bg-white/[0.02] hover:text-zinc-200",
                   ].join(" ")}
                 >
                   <span
                     className={[
-                      "flex size-7 items-center justify-center rounded-lg transition-colors",
+                      "flex size-6 shrink-0 items-center justify-center rounded-lg transition-colors",
                       active ? "bg-[#DB4444] text-white" : "bg-white/5",
                     ].join(" ")}
                   >
-                    <Icon className="size-4" />
+                    <Icon className="size-3.5" />
                   </span>
-                  <span className="font-medium">{item.label}</span>
-                </button>
+                  <span className="truncate">{item.label}</span>
+                  {active && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-[#DB4444]" />
+                  )}
+                </motion.button>
               );
             })}
           </div>
         </div>
 
-        {/* Categories */}
-        <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-            Categories
+        {/* CATEGORIES DROP-SELECT COMPONENT ACCORDION */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">
+            Catalog Categories
           </p>
-          <div className="space-y-1">
-            {categories.map((item) => {
-              const active = category === item.value;
-              return (
-                <button
-                  key={item.value || "all"}
-                  type="button"
-                  onClick={() => setParam("category", item.value)}
-                  className={[
-                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors",
-                    active
-                      ? "bg-white/10 text-white font-medium"
-                      : "bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white",
-                  ].join(" ")}
-                >
-                  <span>{item.label}</span>
-                  {active && <span className="h-1.5 w-1.5 rounded-full bg-[#DB4444]" />}
-                </button>
-              );
-            })}
-          </div>
+          <button
+            type="button"
+            onClick={() => setCatOpen(!catOpen)}
+            className="flex w-full items-center justify-between rounded-xl border border-white/5 bg-black/20 px-3 py-2.5 text-xs text-zinc-200 hover:border-white/10"
+          >
+            <span className={category ? "text-white font-medium" : "text-zinc-400"}>{activeCategoryLabel}</span>
+            <IconChevronDown className={`size-4 text-zinc-500 transition-transform duration-200 ${catOpen ? "rotate-180 text-[#DB4444]" : ""}`} />
+          </button>
+          
+          <AnimatePresence>
+            {catOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden rounded-xl border border-white/5 bg-black/40 mt-1"
+              >
+                <div className="p-1 max-h-[170px] overflow-y-auto scrollbar-none">
+                  {categories.map((item) => (
+                    <button
+                      key={item.value || "all"}
+                      type="button"
+                      onClick={() => {
+                        setParam("category", item.value);
+                        setCatOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs ${
+                        category === item.value ? "bg-white/5 text-white font-medium" : "text-zinc-400 hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {category === item.value && <span className="h-1 w-1 rounded-full bg-[#DB4444]" />}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Price Range */}
-        <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-            Price Range
+        {/* PRICE FILTER DROP-SELECT COMPONENT ACCORDION */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">
+            Price Filter
           </p>
-          <div className="space-y-1">
-            {priceBands.map((item) => {
-              const active = price === item.value;
-              return (
-                <button
-                  key={item.value || "any"}
-                  type="button"
-                  onClick={() => setParam("price", item.value)}
-                  className={[
-                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors",
-                    active
-                      ? "bg-white/10 text-white font-medium"
-                      : "bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white",
-                  ].join(" ")}
-                >
-                  <span>{item.label}</span>
-                  {active && <span className="h-1.5 w-1.5 rounded-full bg-[#DB4444]" />}
-                </button>
-              );
-            })}
-          </div>
+          <button
+            type="button"
+            onClick={() => setPriceOpen(!priceOpen)}
+            className="flex w-full items-center justify-between rounded-xl border border-white/5 bg-black/20 px-3 py-2.5 text-xs text-zinc-200 hover:border-white/10"
+          >
+            <span className={price ? "text-white font-medium" : "text-zinc-400"}>{activePriceLabel}</span>
+            <IconChevronDown className={`size-4 text-zinc-500 transition-transform duration-200 ${priceOpen ? "rotate-180 text-[#DB4444]" : ""}`} />
+          </button>
+
+          <AnimatePresence>
+            {priceOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden rounded-xl border border-white/5 bg-black/40 mt-1"
+              >
+                <div className="p-1">
+                  {priceBands.map((item) => (
+                    <button
+                      key={item.value || "any"}
+                      type="button"
+                      onClick={() => {
+                        setParam("price", item.value);
+                        setPriceOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs ${
+                        price === item.value ? "bg-white/5 text-white font-medium" : "text-zinc-400 hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {price === item.value && <span className="h-1 w-1 rounded-full bg-[#DB4444]" />}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Rating */}
-        <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-            Customer Rating
+        {/* MINIMUM RATING DROP-SELECT COMPONENT ACCORDION */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">
+            Minimum Rating
           </p>
-          <div className="space-y-1">
-            {ratings.map((item) => {
-              const active = rating === item.value;
-              return (
-                <button
-                  key={item.value || "any-rating"}
-                  type="button"
-                  onClick={() => setParam("rating", item.value)}
-                  className={[
-                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors",
-                    active
-                      ? "bg-white/10 text-white font-medium"
-                      : "bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white",
-                  ].join(" ")}
-                >
-                  <span>{item.label}</span>
-                  {active && <span className="h-1.5 w-1.5 rounded-full bg-[#DB4444]" />}
-                </button>
-              );
-            })}
-          </div>
+          <button
+            type="button"
+            onClick={() => setRatingOpen(!ratingOpen)}
+            className="flex w-full items-center justify-between rounded-xl border border-white/5 bg-black/20 px-3 py-2.5 text-xs text-zinc-200 hover:border-white/10"
+          >
+            <span className={rating ? "text-white font-medium" : "text-zinc-400"}>{activeRatingLabel}</span>
+            <IconChevronDown className={`size-4 text-zinc-500 transition-transform duration-200 ${ratingOpen ? "rotate-180 text-[#DB4444]" : ""}`} />
+          </button>
+
+          <AnimatePresence>
+            {ratingOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden rounded-xl border border-white/5 bg-black/40 mt-1"
+              >
+                <div className="p-1">
+                  {ratings.map((item) => (
+                    <button
+                      key={item.value || "any-rating"}
+                      type="button"
+                      onClick={() => {
+                        setParam("rating", item.value);
+                        setRatingOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs ${
+                        rating === item.value ? "bg-white/5 text-white font-medium" : "text-zinc-400 hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {rating === item.value && <span className="h-1 w-1 rounded-full bg-[#DB4444]" />}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Sorting */}
-        <div className="space-y-3 pt-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-            Sort Order
+        {/* ENHANCED SORT SELECTION ACCORDION SYSTEM FLOW */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">
+            Catalog Sort Order
           </p>
-          <div className="rounded-xl border border-white/10 bg-black/20 p-1">
-            <ProductSortSelect
-              value={sortBy}
-              onChange={(value) => setParam("sort", value)}
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setSortOpen(!sortOpen)}
+            className="flex w-full items-center justify-between rounded-xl border border-white/5 bg-black/20 px-3 py-2.5 text-xs text-zinc-200 hover:border-white/10"
+          >
+            <span className="text-white font-medium">{activeSortLabel}</span>
+            <IconChevronDown className={`size-4 text-zinc-500 transition-transform duration-200 ${sortOpen ? "rotate-180 text-[#DB4444]" : ""}`} />
+          </button>
+
+          <AnimatePresence>
+            {sortOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden rounded-xl border border-white/5 bg-black/40 mt-1"
+              >
+                <div className="p-1">
+                  {sortOptions.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => {
+                        setParam("sort", item.value);
+                        setSortOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs ${
+                        sortBy === item.value ? "bg-white/5 text-white font-medium" : "text-zinc-400 hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {sortBy === item.value && <span className="h-1 w-1 rounded-full bg-[#DB4444]" />}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Clear Filters (Only show if filters are applied to save space) */}
-        {Array.from(searchParams.keys()).length > 0 && (
-          <div className="pt-4 border-t border-white/10">
-            <Button
-              type="button"
-              onClick={clearFilters}
-              className="h-11 w-full rounded-xl bg-[#DB4444] font-semibold text-white hover:bg-[#c53a3a]"
+        {/* Sticky Clear Footnote Button (Fades out when filters are reset) */}
+        <AnimatePresence>
+          {hasActiveFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="pt-2 border-t border-white/5 overflow-hidden"
             >
-              Clear all filters
-            </Button>
-          </div>
-        )}
+              <Button
+                type="button"
+                onClick={clearFilters}
+                className="h-10 w-full rounded-xl bg-[#DB4444] font-medium text-white text-xs hover:bg-[#c53a3a] transition-colors flex items-center justify-center gap-2 mt-2 shadow-md shadow-[#DB4444]/10 active:scale-[0.99]"
+              >
+                <IconTrash className="size-3.5" />
+                Clear Matrix Filters
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );

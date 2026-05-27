@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 import ProductGrid from "../components/ProductGrid";
 import ProductHero from "../components/ProductHero";
@@ -14,6 +15,7 @@ import { getEffectivePrice } from "../utils/product.helpers";
 import { EmptyState, GridSkeleton, ErrorState } from "@/shared/components/page-state";
 import ShopFiltersPanel from "../components/ShopFiltersPanel";
 import MobileFiltersBar from "../components/MobileFiltersBar";
+import { Button } from "@/shared/components/ui/button";
 
 export default function ProductsPage() {
   const { products, loading, error } = useProducts();
@@ -28,6 +30,9 @@ export default function ProductsPage() {
   const onSale = searchParams.get("onSale") === "1";
   const freeShipping = searchParams.get("freeShipping") === "1";
 
+  // FIXED: Added 'sortBy !== "newest"' to the filter check.
+  // If the user requests a custom sort order, it hides the promotional blocks
+  // and applies the sort rules natively across the entire catalog grid.
   const hasActiveFilters =
     search.length > 0 ||
     category.length > 0 ||
@@ -139,55 +144,92 @@ export default function ProductsPage() {
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-16 sm:gap-24">
+            <div className="flex flex-col gap-12 sm:gap-16 overflow-visible">
               
-              {/* Only show these sections if no filters are applied */}
-              {!hasActiveFilters ? (
-                <div className="flex flex-col gap-16 sm:gap-24">
-                  <div id="featured" className="scroll-mt-28">
-                    <FeaturedProductsSection products={products} />
-                  </div>
+              {/* Promotional Showcase Layout: Now correctly disappears when custom sorting is active */}
+              <AnimatePresence mode="wait">
+                {!hasActiveFilters ? (
+                  <motion.div 
+                    key="showcase-view"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="flex flex-col gap-12 sm:gap-16"
+                  >
+                    <div id="featured" className="scroll-mt-32">
+                      <FeaturedProductsSection products={products} />
+                    </div>
 
-                  <div className="scroll-mt-28">
-                    <TrendingProductsSection products={products} />
-                  </div>
+                    <div className="scroll-mt-32">
+                      <TrendingProductsSection products={products} />
+                    </div>
 
-                  <div className="scroll-mt-28">
-                    <SaleProductsSection products={products} />
-                  </div>
+                    <div className="scroll-mt-32">
+                      <SaleProductsSection products={products} />
+                    </div>
 
-                  <div className="scroll-mt-28">
-                    <NewArrivalsSection products={products} />
-                  </div>
-                </div>
-              ) : null}
+                    <div className="scroll-mt-32">
+                      <NewArrivalsSection products={products} />
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
 
-              {/* Main Catalog / Filter Results */}
+              {/* Dynamic Grid Section */}
               <ProductSection
-                title={hasActiveFilters ? "Filtered results" : "Full catalog"}
+                title={hasActiveFilters ? "Filtered Results" : "Catalog Preview"}
                 description={
                   hasActiveFilters
-                    ? "Showing products that match your current filters."
-                    : "Browse the complete collection."
+                    ? "Showing products sorted and filtered by your criteria."
+                    : "A quick glimpse of our general collection items."
                 }
-                className="scroll-mt-28"
+                className="scroll-mt-32 border-t border-white/5 pt-8 sm:pt-12"
+                action={
+                  !hasActiveFilters && filteredProducts.length > 3 ? (
+                    <Button 
+                      onClick={() => setSearchParams({ sort: "newest" })}
+                      variant="outline" 
+                      className="rounded-xl border-white/10 bg-transparent text-white hover:bg-white/5 text-xs"
+                    >
+                      View Full Catalog ({filteredProducts.length})
+                    </Button>
+                  ) : null
+                }
               >
                 <div id="catalog" className="pt-4">
                   {filteredProducts.length === 0 ? (
-                    <div className="py-12">
+                    <div className="py-16 rounded-3xl border border-dashed border-white/5 bg-[#17171b]/20">
                       <EmptyState
                         title="No products found"
-                        description="Try changing your filters or searching for something else."
-                        actionLabel="Clear filters"
+                        description="Try modifying your toggle options or clear filters to look again."
+                        actionLabel="Clear Active Filters"
                         onAction={clearFilters}
                         icon={<Search className="h-6 w-6 text-zinc-500" />}
                       />
                     </div>
                   ) : (
-                    <ProductGrid products={filteredProducts} />
+                    <div className="space-y-6">
+                      {/* Displays the entire sorted catalog when filters/sorting are applied, or slices to 3 when on default home dashboard */}
+                      <ProductGrid 
+                        products={hasActiveFilters ? filteredProducts : filteredProducts.slice(0, 3)} 
+                      />
+
+                      {!hasActiveFilters && filteredProducts.length > 3 && (
+                        <div className="flex justify-center pt-4">
+                          <Button
+                            onClick={() => setSearchParams({ sort: "newest" })}
+                            className="w-full sm:w-auto rounded-2xl bg-[#DB4444] px-6 py-5 text-white hover:bg-[#c53a3a] text-sm font-medium shadow-lg shadow-[#DB4444]/10 transition-all active:scale-98"
+                          >
+                            Explore Full Catalog Collection
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </ProductSection>
+
             </div>
           )}
         </div>
