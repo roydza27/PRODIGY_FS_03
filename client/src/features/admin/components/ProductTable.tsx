@@ -10,7 +10,6 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import TableData from "@/shared/components/data-table/TableData";
 import { RowDetailsOverlay } from "@/shared/components/data-table/RowDetailsOverlay";
 import { TableFilters } from "@/shared/components/data-table/TableFilters";
-import ConfirmDialog from "@/shared/components/confirm-dialog/ConfirmDialog";
 import type { Product } from "@/features/products/types/product.types";
 
 type Props = {
@@ -48,7 +47,6 @@ function DragHandle() {
 export default function ProductTable({ products, onEdit, onDelete }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // States synchronized with your global filter toolbar fields
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all"); 
   const [status, setStatus] = useState("all");
@@ -57,7 +55,6 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
     console.log("Committed search filtering variables:", { search, department, status });
   };
 
-  // Dynamic Column Definitions utilizing TanStack ColumnDef configurations
   const columns = useMemo<ColumnDef<Product>[]>(() => [
     { id: "drag", header: () => null, cell: () => <DragHandle /> },
     {
@@ -151,28 +148,21 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
             Edit
           </Button>
           
-          <ConfirmDialog
-            title="Delete this product entry?"
-            description={`Are you sure you want to permanently remove "${row.original.name}" from the system product registry? This cannot be undone.`}
-            confirmLabel="Delete Asset"
-            onConfirm={() => onDelete(row.original)}
-            trigger={
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="rounded-xl border border-white/5 text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8"
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
-            }
-          />
+          {/* FIXED: Removed nested ConfirmDialog. Trigger directly invokes callback */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(row.original)}
+            className="rounded-xl border border-white/5 text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8"
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
         </div>
       ),
     },
   ], [onEdit, onDelete]);
 
-  // Processes state filters dynamically before passing down to TableData display array
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch = !search || 
@@ -215,7 +205,6 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
         {selectedProduct && (
           <div className="space-y-6">
             
-            {/* Visual Media Header Banner Summary */}
             <div className="flex items-center gap-4 border-b border-white/5 pb-4">
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-black/30 border border-white/10 flex items-center justify-center">
                 <img 
@@ -232,7 +221,6 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
               </div>
             </div>
 
-            {/* Informational Parameter Information Cards Grid */}
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                 <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
@@ -265,7 +253,6 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
               </div>
             </div>
 
-            {/* Markdown Description Detail Content Block */}
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">Catalog Item Summary</p>
               <p className="text-sm leading-relaxed text-zinc-300">
@@ -273,7 +260,6 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
               </p>
             </div>
 
-            {/* Drawer Control Options Footer Area Container */}
             <div className="pt-4 border-t border-white/5 flex gap-3">
               <Button
                 type="button"

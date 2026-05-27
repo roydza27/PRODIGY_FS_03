@@ -185,13 +185,6 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
     }) ?? fetchedProducts[2] ?? null;
   }, [fetchedProducts]);
 
-  const featuredImage = useMemo(() => getFeaturedImage(featuredProduct), [featuredProduct]);
-  const featuredName = useMemo(() => getProductName(featuredProduct), [featuredProduct]);
-  const currentPrice = useMemo(() => getCurrentPrice(featuredProduct), [featuredProduct]);
-  const oldPrice = useMemo(() => getOldPrice(featuredProduct), [featuredProduct]);
-
-  const productId = featuredProduct?._id ?? featuredProduct?.id ?? "";
-
   const carouselItems = useMemo<ThreeDCarouselItem[]>(() => {
     if (!fetchedProducts || fetchedProducts.length === 0) return [];
     
@@ -212,7 +205,6 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
 
   return (
     <section className="px-4 sm:px-6 lg:px-8">
-      {/* FIXED: rebalanced from 1.3fr to 1.15fr_1fr to equalize columns on big setups */}
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.15fr_1fr]">
         
         {/* LEFT CARD CONTAINER */}
@@ -325,7 +317,6 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
 
         {/* RIGHT CARD COLUMN */}
         <div className="grid gap-6 text-left overflow-visible">
-          {/* FIXED: set padding-inline (px-12) on deck layer for horizontal 3D rotation allowance */}
           <div className="overflow-visible rounded-[28px] border border-white/10 bg-gradient-to-b from-[#161619] to-[#0f0f11] p-6 shadow-2xl shadow-black/40 sm:p-8">
             <div className="flex items-center justify-between mb-6 text-left">
               <div className="space-y-1">
@@ -345,12 +336,20 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
             </div>
 
             <div className="w-full relative px-10 overflow-visible flex items-center justify-center">
-              <ThreeDCarousel 
-                items={carouselItems} 
-                isLoading={loadingFeatured} 
-                cardHeight={550} 
-                rotateInterval={4500} 
-              />
+              {/* FIXED: Conditionally block initialization until layout tokens are fully mounted */}
+              {loadingFeatured || carouselItems.length === 0 ? (
+                <div className="h-[450px] w-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/5 bg-black/10 text-zinc-500 text-sm">
+                  <Loader2 className="h-5 w-5 animate-spin text-[#DB4444] mb-3" />
+                  Populating carousel deck...
+                </div>
+              ) : (
+                <ThreeDCarousel 
+                  items={carouselItems} 
+                  isLoading={false} 
+                  cardHeight={550} 
+                  rotateInterval={4500} 
+                />
+              )}
             </div>
           </div>
 

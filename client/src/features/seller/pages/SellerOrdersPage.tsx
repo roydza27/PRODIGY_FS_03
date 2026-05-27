@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { 
   ArrowRight, 
@@ -11,10 +11,8 @@ import {
   Activity 
 } from "lucide-react";
 
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 
 import TableData from "@/shared/components/data-table/TableData";
@@ -56,7 +54,7 @@ export default function SellerOrdersPage() {
 
   // Synchronized state variables mapping to your global TableFilters hook props
   const [searchTerm, setSearchTerm] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all"); // Catch-all department parameter slot
+  const [departmentFilter, setDepartmentFilter] = useState("all"); 
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "processing" | "shipped" | "delivered">("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
@@ -78,7 +76,7 @@ export default function SellerOrdersPage() {
   }, [orders, searchTerm, filterStatus]);
 
   // Dynamic TanStack column definitions local to order transactions
-  const orderColumns = useMemo<ColumnDef<Order> []>(() => [
+  const orderColumns = useMemo<ColumnDef<Order>[]>(() => [
     { id: "drag", header: () => null, cell: () => <DragHandle /> },
     {
       id: "select",
@@ -168,15 +166,13 @@ export default function SellerOrdersPage() {
           <p className="text-zinc-400">Oversee fulfillment and monitor customer transactions from a single matrix console view.</p>
         </div>
 
-        {/* Dynamic Status Nav tabs counting parameters live */}
-
         {/* Unified Table Engine pipeline containing integrated search widgets */}
-        <TableData
+        {/* FIXED: Provided strict explicit context generic <Order> directly to component execution initialization */}
+        <TableData<Order>
           data={filteredOrders}
           columns={orderColumns}
           selectedItem={selectedOrder}
           onSelectedItemChange={setSelectedOrder}
-          /* INJECT UNIFIED FILTER ROW COMPONENT HERE */
           filterToolbar={
             <TableFilters
               search={searchTerm}
@@ -189,8 +185,12 @@ export default function SellerOrdersPage() {
             />
           }
         >
-          {/* Sliding Right Side Drawer Overlay Panel Component */}
+          {/* FIXED: Satisfied controlled state paradigm specifications by binding explicit control tokens */}
           <RowDetailsOverlay
+            open={!!selectedOrder}
+            onOpenChange={(isOpen) => {
+              if (!isOpen) setSelectedOrder(null);
+            }}
             title={selectedOrder ? `Fulfillment Ticket ${selectedOrder.orderId}` : "Order Profile Overview"}
             description="Inspect merchant basket itemization ledger and transactional records."
             variant="drawer"
@@ -209,7 +209,7 @@ export default function SellerOrdersPage() {
                 </div>
 
                 {/* Main Purchase Line Item Breakdown Summary Card */}
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-white/3 p-4 space-y-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
                     <ShoppingBag className="size-4 text-[#DB4444]" /> Order Item Content
                   </p>
@@ -229,7 +229,7 @@ export default function SellerOrdersPage() {
 
                 {/* Customer Account Identity Profile Parameters */}
                 <div className="grid gap-3 grid-cols-1">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                     <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
                       <User className="size-4" /> Customer Account Name
                     </div>
@@ -238,7 +238,7 @@ export default function SellerOrdersPage() {
                 </div>
 
                 {/* Informational Warehouse Safety Instructions Box */}
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
+                <div className="rounded-2xl border border-white/10 bg-white/3 p-4 space-y-2">
                   <p className="text-xs font-medium uppercase tracking-wide text-[#A1A1AA] flex items-center gap-1.5">
                     <Activity className="size-3.5" /> Logistics Workflow Note
                   </p>

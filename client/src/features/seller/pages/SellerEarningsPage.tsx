@@ -1,23 +1,20 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { 
-  TrendingUp, 
-  CreditCard, 
   Calendar, 
   GripVertical, 
-  Eye, 
   IndianRupee, 
   Receipt, 
   ArrowUpRight 
 } from "lucide-react";
 
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { Card } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { Tabs, TabsContent } from "@/shared/components/ui/tabs";
 
 import TableData from "@/shared/components/data-table/TableData";
 import { TableFilters } from "@/shared/components/data-table/TableFilters";
@@ -28,7 +25,7 @@ interface TransactionItem {
   referenceId: string;
   type: "sale" | "payout" | "refund";
   amount: number;
-  status: "active" | "on_leave" | "inactive"; // Maps layout tags to active (success), on_leave (pending), inactive (failed)
+  status: "active" | "on_leave" | "inactive"; // Maps tags to Success (active), Pending (on_leave), Failed (inactive)
   date: string;
   description: string;
 }
@@ -54,10 +51,6 @@ function DragHandle() {
 }
 
 export default function SellerEarningsPage() {
-  const earnings = 145810;
-  const pending = 24560;
-  const withdrawable = earnings - 25000;
-
   // Mock ledger collection tracking payout history and account adjustments
   const [mockLedger] = useState<TransactionItem[]>([
     { id: "tx_1", referenceId: "TXN-884910", type: "sale", amount: 4998, status: "active", date: "2026-05-24", description: "Fulfillment payload distribution sequence payout for Wireless Headphones entry" },
@@ -68,7 +61,7 @@ export default function SellerEarningsPage() {
 
   // Global toolbar status manager states
   const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all"); // Maps into 'department' input slot parameter
+  const [typeFilter, setTypeFilter] = useState("all"); 
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedTx, setSelectedTx] = useState<TransactionItem | null>(null);
 
@@ -184,19 +177,18 @@ export default function SellerEarningsPage() {
         {/* Header Metadata Title Row */}
         <div className="mx-6">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Earnings & Payouts</h1>
-          <p className="mt-1 text-zinc-400">Track structural storefront settlements and configure payout target accounts.</p>
+          <p className="mt-1 text-zinc-400">Track storefront settlements and configure payout target accounts.</p>
         </div>
 
         {/* Tab Filter Workspace Views */}
         <Tabs defaultValue="transactions" className="w-full">
-
           <TabsContent value="transactions" className="mt-0">
-            <TableData
+            {/* FIXED: Passed strict implicit context generic <TransactionItem> directly to table initialization */}
+            <TableData<TransactionItem>
               data={filteredLedger}
               columns={ledgerColumns}
               selectedItem={selectedTx}
               onSelectedItemChange={setSelectedTx}
-              /* INTEGRATED FILTER TOOLBAR FROM INJECTED PROP SLOT ROOT */
               filterToolbar={
                 <TableFilters
                   search={searchTerm}
@@ -209,8 +201,12 @@ export default function SellerEarningsPage() {
                 />
               }
             >
-              {/* Dynamic sliding drawer parsing selected invoice reference information tracking variables safely */}
+              {/* FIXED: Satisfied Controlled Component rule by feeding open and onOpenChange values cleanly */}
               <RowDetailsOverlay
+                open={!!selectedTx}
+                onOpenChange={(isOpen) => {
+                  if (!isOpen) setSelectedTx(null);
+                }}
                 title={selectedTx ? `Transaction Audit ${selectedTx.referenceId}` : "Financial Overview"}
                 description="Verify settlement logs, core platform margins, and status tags."
                 variant="drawer"
@@ -233,14 +229,14 @@ export default function SellerEarningsPage() {
 
                     {/* Operational Value Cards Grids Layout */}
                     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                      <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                         <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
                           <IndianRupee className="size-4 text-emerald-400" /> Transacted Balance
                         </div>
                         <p className="text-xl font-bold font-mono text-white">₹{selectedTx.amount.toLocaleString()}</p>
                       </div>
 
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                      <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                         <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
                           <Calendar className="size-4 text-blue-400" /> Logged Timestamp
                         </div>
@@ -249,7 +245,7 @@ export default function SellerEarningsPage() {
                     </div>
 
                     {/* Ledger Descriptive Log Entry */}
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">Auditing Account Log Context</p>
                       <p className="text-sm leading-relaxed text-zinc-300 font-medium">{selectedTx.description}</p>
                     </div>
@@ -277,7 +273,7 @@ export default function SellerEarningsPage() {
 
           <TabsContent value="settings" className="mt-0">
             <Card className="border-white/10 bg-[#111113] p-8 rounded-2xl border-dashed flex flex-col items-center justify-center py-24 text-center">
-              <CreditCard className="size-10 text-zinc-700 mb-3" />
+              <Receipt className="size-10 text-zinc-700 mb-3" />
               <p className="text-base font-semibold text-white">Fulfillment Banking Node Active</p>
               <p className="text-sm text-zinc-500 max-w-sm mt-1">Settlements map matching your validated registration parameters. To re-verify KYC tax configurations or upgrade bank routing numbers, open an administrator support request ticket.</p>
             </Card>

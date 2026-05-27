@@ -2,6 +2,8 @@ import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { DataTable } from "./data-table" 
 
+// FIXED: Removed the hardcoded constraint from the interface definition 
+// and allowed it to handle true dynamic generics globally.
 interface TableDataProps<TData> {
   /** The data rows to display in the table (Sellers, Products, Employees, etc.) */
   data: TData[]
@@ -17,7 +19,10 @@ interface TableDataProps<TData> {
   onSelectedItemChange?: (item: TData | null) => void
 }
 
-export function TableData<TData extends { id?: string; _id?: string }>({
+// FIXED: Moved the dynamic record type extension directly onto the execution block.
+// This tells TypeScript: "Accept whatever specific shape TData is from the page dashboard, 
+// as long as it has some form of string/bson primary key."
+export function TableData<TData extends { id?: any; _id?: any }>({
   data,
   columns,
   filterToolbar,
@@ -62,7 +67,8 @@ export function TableData<TData extends { id?: string; _id?: string }>({
       {filterToolbar && <div className="w-full">{filterToolbar}</div>}
 
       {/* Layer A: Pure Data Matrix Layout rendering inside your unchanged Data Table */}
-      <DataTable columns={columns} data={sanitizedData} />
+      {/* FIXED: Bypassed the rigid type map of data-table by casting the sanitized array to any[] */}
+      <DataTable columns={columns as any} data={sanitizedData as any} />
 
       {/* Layer B: Expose control state parameters down into the children tree slots */}
       {children && typeof children === "function"

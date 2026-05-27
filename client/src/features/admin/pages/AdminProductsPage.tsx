@@ -8,10 +8,19 @@ import AdminPageShell from "../components/AdminPageShell";
 import ProductTable from "../components/ProductTable";
 import { adminProductService } from "../services/product.service";
 import type { Product } from "@/features/products/types/product.types";
-import ConfirmDialog from "@/shared/components/confirm-dialog/ConfirmDialog";
 import { EmptyState, ErrorState, TableSkeleton } from "@/shared/components/page-state";
-import { Plus, RefreshCw, Sparkles, Package, Tags, DollarSign } from "lucide-react";
+import { Plus, RefreshCw, Sparkles, Package, Tags, DollarSign, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+// Standard atomic dialogue primitives ensuring clean, un-intercepted DOM mounting
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 
 export default function AdminProductsPage() {
   const navigate = useNavigate();
@@ -40,7 +49,6 @@ export default function AdminProductsPage() {
     loadProducts();
   }, []);
 
-  // ROUTING FIX: Guides the router straight to your administrative sub-path editor layout
   const handleOpenEdit = (product: Product) => {
     navigate(`/admin/products/${product._id}/edit`);
   };
@@ -59,11 +67,6 @@ export default function AdminProductsPage() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const openEdit = (product: Product) => {
-    // FIX: Pushes the navigation matrix straight to the uniform /:id path expected by the form page params
-    navigate(`/admin/products/${product._id}/edit`);
   };
 
   const stats = useMemo(() => {
@@ -149,19 +152,46 @@ export default function AdminProductsPage() {
         )}
       </div>
 
-      {/* Persistent Overlay Asset Destructive Confirmation Modals */}
-      <ConfirmDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
-        title="Delete product catalog entry?"
-        description={`Are you sure you want to permanently delete "${deleteTarget?.name || "this item"}"? This action drops all database associations and cannot be undone.`}
-        confirmText="Confirm Delete"
-        cancelText="Cancel"
-        loading={submitting}
-        onConfirm={handleDelete}
-      />
+      {/* FIXED: Swapped for standard controlled overlay modal portal layout */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <DialogContent className="border-white/10 bg-[#121214] text-white rounded-2xl max-w-md p-6 shadow-2xl">
+          <DialogHeader className="text-left space-y-2">
+            <DialogTitle className="text-xl font-semibold text-white tracking-tight">
+              Delete product catalog entry?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-zinc-400 leading-relaxed">
+              Are you sure you want to permanently delete <span className="text-zinc-200 font-medium">"{deleteTarget?.name}"</span>? This action drops all database associations and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DialogFooter className="mt-6 flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-white/5">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setDeleteTarget(null)}
+              disabled={submitting}
+              className="rounded-xl border border-white/5 text-zinc-400 hover:text-white hover:bg-white/5 font-medium px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDelete}
+              disabled={submitting}
+              className="rounded-xl bg-[#DB4444] text-white hover:bg-[#c53a3a] font-medium px-4 flex items-center justify-center min-w-[120px]"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  Dropping...
+                </>
+              ) : (
+                "Confirm Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminPageShell>
   );
 }

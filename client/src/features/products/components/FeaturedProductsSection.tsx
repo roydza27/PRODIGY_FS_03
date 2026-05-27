@@ -4,13 +4,22 @@ import ProductGrid from "./ProductGrid";
 import ProductSection from "./ProductSection";
 import type { Product } from "../types/product.types";
 
+type AnyProduct = Product & {
+  isFeatured?: boolean;
+  featured?: boolean;
+};
+
 type Props = {
   products: Product[];
 };
 
 export default function FeaturedProductsSection({ products }: Props) {
-  const featured = products.filter((product) => product.isFeatured).slice(0, 8);
+  // Enhanced to safely capture both common boolean schema properties ('isFeatured' and 'featured')
+  const featured = products
+    .filter((product: AnyProduct) => Boolean(product.isFeatured || product.featured))
+    .slice(0, 8);
 
+  // Safely falls back to returning null if no matches exist, preventing blank sections
   if (featured.length === 0) return null;
 
   return (

@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
-  ArrowRight,
   CheckCircle2,
   Copy,
-  Search,
   ShoppingBag,
   Truck,
   Package,
@@ -17,10 +15,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { Tabs, TabsContent } from "@/shared/components/ui/tabs";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 
 import TableData from "@/shared/components/data-table/TableData";
@@ -80,7 +77,7 @@ function DragHandle() {
 export default function SellerShipmentsPage() {
   // Synchronized search and option filters local states
   const [searchTerm, setSearchTerm] = useState("");
-  const [carrierFilter, setCarrierFilter] = useState("all"); // Maps directly into 'department' toolbar slot position
+  const [carrierFilter, setCarrierFilter] = useState("all"); 
   const [activeTab, setActiveTab] = useState<string>("all");
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
 
@@ -106,17 +103,6 @@ export default function SellerShipmentsPage() {
       return matchesSearch && matchesCarrier && matchesTab;
     });
   }, [searchTerm, carrierFilter, activeTab]);
-
-  const stats = useMemo(() => {
-    const total = initialShipments.length;
-    const pending = initialShipments.filter((s) => s.status === "pending").length;
-    const shipped = initialShipments.filter((s) => s.status === "shipped").length;
-    const inTransit = initialShipments.filter((s) => s.status === "in-transit").length;
-    const delivered = initialShipments.filter((s) => s.status === "delivered").length;
-    const fulfillmentRate = total > 0 ? Math.round((delivered / total) * 100) : 0;
-
-    return { total, pending, shipped, inTransit, delivered, fulfillmentRate };
-  }, []);
 
   const handleCopyTracking = async (tracking: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -221,8 +207,6 @@ export default function SellerShipmentsPage() {
     },
   ], []);
 
-  const tabsConfig = ["all", "pending", "shipped", "in-transit", "delivered"] as const;
-
   return (
     <div className="min-h-screen bg-[#111113] px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
       <div className="mx-auto max-w-7xl space-y-8 text-left">
@@ -239,13 +223,13 @@ export default function SellerShipmentsPage() {
 
         {/* Workspace Operations View Layout Pipeline boards */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsContent value={activeTab} className="mt-6">
-            <TableData
+          <TabsContent value={activeTab} className="mt-0">
+            {/* FIXED: Passed strict implicit context generic <Shipment> directly to table invocation */}
+            <TableData<Shipment>
               data={filteredShipments}
               columns={shipmentColumns}
               selectedItem={selectedShipment}
               onSelectedItemChange={setSelectedShipment}
-              /* HOOKED GENERIC FILTER ROW SLOT HERE */
               filterToolbar={
                 <TableFilters
                   search={searchTerm}
@@ -258,8 +242,12 @@ export default function SellerShipmentsPage() {
                 />
               }
             >
-              {/* Sliding details profile configuration layout panel */}
+              {/* FIXED: Satisfied controlled state paradigm specifications by binding explicit open/change props */}
               <RowDetailsOverlay
+                open={!!selectedShipment}
+                onOpenChange={(isOpen) => {
+                  if (!isOpen) setSelectedShipment(null);
+                }}
                 title={selectedShipment ? `Track Package ${selectedShipment.orderId}` : "Logistical Analysis"}
                 description="Monitor telemetry milestones and copy transit reference indices."
                 variant="drawer"
@@ -283,21 +271,21 @@ export default function SellerShipmentsPage() {
 
                     {/* Parametric Info Blocks Cards Grid */}
                     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                      <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                         <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
                           <Truck className="size-4 text-[#DB4444]" /> Logistics Partner
                         </div>
                         <p className="text-sm font-semibold text-white">{selectedShipment.carrier}</p>
                       </div>
 
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                      <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                         <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
                           <ClipboardList className="size-4" /> Dispatched On
                         </div>
                         <p className="text-sm font-semibold text-white font-mono">{selectedShipment.date}</p>
                       </div>
 
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:col-span-2">
+                      <div className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:col-span-2">
                         <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
                           <ShoppingBag className="size-4" /> Container Pack Manifest
                         </div>
@@ -306,7 +294,7 @@ export default function SellerShipmentsPage() {
                     </div>
 
                     {/* Airway Bill Actions Input Cards */}
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/3 p-4 space-y-3">
                       <span className="text-xs uppercase tracking-wide font-medium text-[#A1A1AA] block">Waybill References</span>
                       <div className="flex items-center justify-between bg-black/20 p-3 rounded-xl border border-white/5 font-mono text-xs">
                         <span className="text-zinc-300 select-all">{selectedShipment.trackingNumber}</span>
@@ -323,8 +311,8 @@ export default function SellerShipmentsPage() {
 
                     {/* Interactive Action Redirect Trays */}
                     <div className="pt-4 border-t border-white/5">
-                      <Button className="w-full bg-[#DB4444] hover:bg-[#c53a3a] text-white h-11 rounded-xl transition-all font-medium">
-                        Launch Third-Party Courier API Tracking <ArrowRight className="ml-2 size-4" />
+                      <Button className="w-full bg-[#DB4444] hover:bg-[#c53a3a] text-white h-11 rounded-xl transition-all font-medium flex items-center justify-center gap-2">
+                        Launch Third-Party Courier API Tracking <Package className="size-4" />
                       </Button>
                     </div>
 
