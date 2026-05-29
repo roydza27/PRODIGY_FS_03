@@ -2,8 +2,6 @@ import * as React from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { DataTable } from "./data-table" 
 
-// FIXED: Removed the hardcoded constraint from the interface definition 
-// and allowed it to handle true dynamic generics globally.
 interface TableDataProps<TData> {
   /** The data rows to display in the table (Sellers, Products, Employees, etc.) */
   data: TData[]
@@ -19,9 +17,6 @@ interface TableDataProps<TData> {
   onSelectedItemChange?: (item: TData | null) => void
 }
 
-// FIXED: Moved the dynamic record type extension directly onto the execution block.
-// This tells TypeScript: "Accept whatever specific shape TData is from the page dashboard, 
-// as long as it has some form of string/bson primary key."
 export function TableData<TData extends { id?: any; _id?: any }>({
   data,
   columns,
@@ -36,6 +31,7 @@ export function TableData<TData extends { id?: any; _id?: any }>({
 
   // Determine if state is controlled externally by parent or fallbacks locally
   const activeItem = selectedItem !== null ? selectedItem : localSelectedItem
+  const isControlled = selectedItem !== null
 
   // Automatically open overlay layout when a row item context drops in
   React.useEffect(() => {
@@ -46,12 +42,15 @@ export function TableData<TData extends { id?: any; _id?: any }>({
 
   // Clear states completely when closing drawer/modal overlays
   const handleOpenChange = React.useCallback((open: boolean) => {
-    setOverlayOpen(open)
-    if (!open) {
-      if (onSelectedItemChange) onSelectedItemChange(null)
-      setLocalSelectedItem(null)
+    if (!isControlled) {
+      setOverlayOpen(open)
+      if (!open) setLocalSelectedItem(null)
+    } else {
+      if (!open && onSelectedItemChange) {
+        onSelectedItemChange(null)
+      }
     }
-  }, [onSelectedItemChange])
+  }, [isControlled, onSelectedItemChange])
 
   // Map MongoDB _id entries to standard id keys so dnd-kit row wrappers remain working
   const sanitizedData = React.useMemo(() => {
@@ -66,24 +65,27 @@ export function TableData<TData extends { id?: any; _id?: any }>({
       {/* Structural Filter Slot Layer positioned directly above your data display grid */}
       {filterToolbar && <div className="w-full">{filterToolbar}</div>}
 
-      {/* Layer A: Pure Data Matrix Layout rendering inside your unchanged Data Table */}
-      {/* FIXED: Bypassed the rigid type map of data-table by casting the sanitized array to any[] */}
+      {/* Layer A: Pure Data Matrix Layout rendering inside your reactive Data Table */}
       <DataTable columns={columns as any} data={sanitizedData as any} />
 
-      {/* Layer B: Expose control state parameters down into the children tree slots */}
+      {/* Layer B: Expose control state parameters safely without clobbering existing page layout props */}
       {children && typeof children === "function"
         ? (children as Function)({ 
             item: activeItem, 
-            open: overlayOpen, 
+            open: isControlled ? !!selectedItem : overlayOpen, 
             onOpenChange: handleOpenChange 
           })
         : React.Children.map(children, (child) => {
             if (React.isValidElement(child)) {
-              return React.cloneElement(child as React.ReactElement<any>, {
-                item: activeItem,
-                open: overlayOpen,
-                onOpenChange: handleOpenChange,
-              })
+              // FIXED: Cast child.props safely to bypass TypeScript 'unknown' object strictness
+              const childProps = child.props as Record<string, any>;
+              
+              const propsToInject = {
+                item: childProps.item !== undefined ? childProps.item : activeItem,
+                open: childProps.open !== undefined ? childProps.open : (isControlled ? !!selectedItem : overlayOpen),
+                onOpenChange: childProps.onOpenChange !== undefined ? childProps.onOpenChange : handleOpenChange,
+              }
+              return React.cloneElement(child as React.ReactElement<any>, propsToInject)
             }
             return child
           })}

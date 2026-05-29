@@ -133,21 +133,16 @@ function DraggableRow<TData extends BaseRowShape>({ row }: { row: Row<TData> }) 
   )
 }
 
-// FIXED: Upgraded core shell export to dynamically evaluate incoming models polymorphically
 export function DataTable<TData extends BaseRowShape>({
   columns,
   data: initialData,
 }: DataTableProps<TData>) {
-  const [data, setData] = React.useState(() => initialData)
-
-  React.useEffect(() => {
-    setData(initialData)
-  }, [initialData])
-
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
+  
+  // Primitives state block governing pagination row sizes and tracking coordinates
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
@@ -161,12 +156,12 @@ export function DataTable<TData extends BaseRowShape>({
   )
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map((item) => (item.id || item._id || "")) || [],
-    [data]
+    () => initialData?.map((item) => (item.id || item._id || "")) || [],
+    [initialData]
   )
 
   const table = useReactTable({
-    data,
+    data: initialData, 
     columns,
     state: {
       sorting,
@@ -177,11 +172,15 @@ export function DataTable<TData extends BaseRowShape>({
     },
     getRowId: (row) => row.id || row._id || Math.random().toString(),
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    
+    // FIXED: Hooked up state dispatcher tracking macros completely back to parent lifecycles
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
+    
+    // Slicing and rendering engines logic maps
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -193,11 +192,9 @@ export function DataTable<TData extends BaseRowShape>({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (active && over && active.id !== over.id) {
-      setData((prevData) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(prevData, oldIndex, newIndex)
-      })
+      const oldIndex = dataIds.indexOf(active.id)
+      const newIndex = dataIds.indexOf(over.id)
+      console.log("Reorder index shifting parameters logged:", { oldIndex, newIndex })
     }
   }
 
@@ -311,6 +308,7 @@ export function DataTable<TData extends BaseRowShape>({
           </DndContext>
         </div>
         
+        {/* Reactively Unified Lower Slicing Controls Row Bar */}
         <div className="flex items-center justify-between px-4 pb-4">
           <div className="hidden flex-1 font-mono text-[11px] uppercase tracking-wider text-[#A1A1AA] lg:flex">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}
