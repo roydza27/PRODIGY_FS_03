@@ -1,0 +1,67 @@
+{
+  "source_url": "https://www.flipkart.com/tp-link-archer-c50-ac1200-wireless-dual-band-router-2-4-ghz-5-ghz-1200-mbps-wifi-speed-external-antenna-ethernet-cable-broadband/p/itmfy5x6fsapzdad",
+  "product_title": "TP-Link Archer C50 AC1200 Wireless Dual Band Router",
+  "short_title": "TP-Link Archer C50",
+  "category": "electronics",
+  "status": "active",
+  "featured": true,
+  "current_price": "1599",
+  "original_price": "3499",
+  "stock": 25,
+  "image_urls": [
+    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/t/v/x/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzsas5pqjd.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/4/v/9/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzpsj2mhyt.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/6/p/r/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdz9gqvgv8z.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/y/e/9/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzhs8vpm3h.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/h/u/k/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzwsukbttr.jpeg?q=90"
+  ],
+  "description": "High-speed TP-Link Archer C50 AC1200 dual-band WiFi router designed for smooth streaming, gaming, video calls, and multi-device home networking with reliable coverage and stable performance.",
+  "specifications": [
+    {
+      "label": "WiFi Standard",
+      "value": "802.11ac"
+    },
+    {
+      "label": "Speed",
+      "value": "Up to 1200 Mbps"
+    },
+    {
+      "label": "Bands",
+      "value": "2.4 GHz & 5 GHz Dual Band"
+    },
+    {
+      "label": "Antennas",
+      "value": "4 External Antennas"
+    },
+    {
+      "label": "Ports",
+      "value": "Ethernet LAN/WAN Ports"
+    },
+    {
+      "label": "Security",
+      "value": "WPA/WPA2 Encryption"
+    },
+    {
+      "label": "Usage",
+      "value": "Broadband & Fiber Internet"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "Does this router support dual-band WiFi?",
+      "answer": "Yes, it supports both 2.4 GHz and 5 GHz bands."
+    },
+    {
+      "question": "Is this router suitable for gaming and streaming?",
+      "answer": "Yes, AC1200 speed is suitable for HD streaming and online gaming."
+    },
+    {
+      "question": "Can multiple devices connect at the same time?",
+      "answer": "Yes, the router supports multiple connected devices efficiently."
+    },
+    {
+      "question": "Does it work with fiber broadband connections?",
+      "answer": "Yes, it supports broadband and fiber internet setups."
+    }
+  ]
+}
