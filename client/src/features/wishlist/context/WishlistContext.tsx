@@ -110,6 +110,15 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const refreshWishlist = useCallback(async () => {
+    const token = getToken();
+
+    if (!token) {
+      setItems([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -121,6 +130,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       setItems(normalizeWishlistData(res));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load wishlist");
+      setItems([]);
     } finally {
       setLoading(false);
     }

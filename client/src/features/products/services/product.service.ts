@@ -45,7 +45,7 @@ export type AddReviewPayload = {
 };
 
 export const productService = {
-  getAll: () => request<ProductsResponse>("/products"),
+  getAll: () => request<ProductsResponse>("/products?limit=100&page=1"),
   getById: (id: string) => request<ProductResponse>(`/products/${id}`),
 
   getReviews: (id: string) =>

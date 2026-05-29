@@ -50,7 +50,9 @@ export type AdminProductResponse = {
 };
 
 export const adminProductService = {
-  getAll: () => request<AdminProductsResponse>("/products"),
+  // FIXED: Changed from 'ProductsResponse' to the explicitly declared 'AdminProductsResponse' type
+  getAll: () => request<AdminProductsResponse>("/products?limit=100&page=1"),
+  
   getById: (id: string) => request<AdminProductResponse>(`/products/${id}`),
 
   create: (payload: Partial<Product>) =>

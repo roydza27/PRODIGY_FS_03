@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Loader2, Search, ShoppingBag, Star } from "lucide-react";
+import { ArrowRight, Loader2, Search, ShoppingBag } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Link } from "react-router-dom";
@@ -15,6 +14,7 @@ type AnyProduct = Product & {
   id?: string;
   name?: string;
   title?: string;
+  brand?: string;
   image?: string;
   imageUrl?: string;
   thumbnail?: string;
@@ -40,6 +40,15 @@ type AnyProduct = Product & {
 type StoreHeroSectionProps = {
   products?: Product[];
 };
+
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
 
 function extractProducts(res: unknown): AnyProduct[] {
   if (Array.isArray(res)) return res as AnyProduct[];
@@ -67,7 +76,9 @@ function extractProducts(res: unknown): AnyProduct[] {
 function pickFeaturedProduct(products: AnyProduct[]) {
   return (
     products.find((p) => p.isFeatured || p.featured) ??
-    products.find((p) => Boolean(p.image || p.imageUrl || p.thumbnail || p.coverImage || p.poster || p.banner)) ??
+    products.find((p) =>
+      Boolean(p.image || p.imageUrl || p.thumbnail || p.coverImage || p.poster || p.banner)
+    ) ??
     products[0] ??
     null
   );
@@ -102,6 +113,14 @@ function getProductName(product: AnyProduct | null) {
   return product.name || product.title || "Featured product";
 }
 
+function getShortProductName(product: AnyProduct | null, maxLength = 36) {
+  const title = getProductName(product).trim();
+  if (title.length <= maxLength) return title;
+
+  const cut = Math.max(10, maxLength - 7);
+  return `${title.slice(0, cut).trimEnd()}...more`;
+}
+
 function getCurrentPrice(product: AnyProduct | null) {
   if (!product) return "—";
 
@@ -131,14 +150,20 @@ function getOldPrice(product: AnyProduct | null) {
 const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => {
   const [fetchedProducts, setFetchedProducts] = useState<AnyProduct[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [shuffleKey, setShuffleKey] = useState(0);
+  const [groceriesIndex, setGroceriesIndex] = useState(0);
+  const [essentialsIndex, setEssentialsIndex] = useState(0);
 
   useEffect(() => {
     let mounted = true;
 
     const loadProducts = async () => {
       if (Array.isArray(productsProp) && productsProp.length > 0) {
-        setFetchedProducts(productsProp as AnyProduct[]);
-        setLoadingFeatured(false);
+        if (mounted) {
+          setFetchedProducts(productsProp as AnyProduct[]);
+          setShuffleKey(Date.now());
+          setLoadingFeatured(false);
+        }
         return;
       }
 
@@ -148,6 +173,7 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
 
         if (mounted) {
           setFetchedProducts(products);
+          setShuffleKey(Date.now());
         }
       } catch (error) {
         console.error("Failed to load products:", error);
@@ -166,48 +192,92 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
     };
   }, [productsProp]);
 
-  const featuredProduct = useMemo(
-    () => pickFeaturedProduct(fetchedProducts),
-    [fetchedProducts]
-  );
+  const groceriesPool = useMemo(() => {
+    const pool = fetchedProducts.filter((p) => {
+      const matchText = `${p.name ?? ""} ${p.title ?? ""} ${p.category ?? ""}`.toLowerCase();
+      return (
+        matchText.includes("grocery") ||
+        matchText.includes("food") ||
+        matchText.includes("fresh") ||
+        matchText.includes("daily")
+      );
+    });
 
-  const dynamicGroceriesItem = useMemo(() => {
-    return fetchedProducts.find(p => {
-      const matchText = `${p.name} ${p.title} ${p.category}`.toLowerCase();
-      return matchText.includes("grocery") || matchText.includes("food") || matchText.includes("fresh");
-    }) ?? fetchedProducts[1] ?? null;
-  }, [fetchedProducts]);
+    return shuffleArray(pool.length > 0 ? pool : fetchedProducts);
+  }, [fetchedProducts, shuffleKey]);
 
-  const dynamicEssentialsItem = useMemo(() => {
-    return fetchedProducts.find(p => {
-      const matchText = `${p.name} ${p.title} ${p.category}`.toLowerCase();
-      return matchText.includes("essential") || matchText.includes("home") || matchText.includes("living");
-    }) ?? fetchedProducts[2] ?? null;
-  }, [fetchedProducts]);
+  const essentialsPool = useMemo(() => {
+    const pool = fetchedProducts.filter((p) => {
+      const matchText = `${p.name ?? ""} ${p.title ?? ""} ${p.category ?? ""}`.toLowerCase();
+      return (
+        matchText.includes("essential") ||
+        matchText.includes("home") ||
+        matchText.includes("living")
+      );
+    });
+
+    return shuffleArray(pool.length > 0 ? pool : fetchedProducts);
+  }, [fetchedProducts, shuffleKey]);
+
+  useEffect(() => {
+    setGroceriesIndex(0);
+  }, [shuffleKey]);
+
+  useEffect(() => {
+    setEssentialsIndex(0);
+  }, [shuffleKey]);
+
+  useEffect(() => {
+    if (groceriesPool.length <= 1) return;
+
+    const timer = window.setInterval(() => {
+      setGroceriesIndex((prev) => (prev + 1) % groceriesPool.length);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [groceriesPool.length]);
+
+  useEffect(() => {
+    if (essentialsPool.length <= 1) return;
+
+    const timer = window.setInterval(() => {
+      setEssentialsIndex((prev) => (prev + 1) % essentialsPool.length);
+    }, 6500);
+
+    return () => window.clearInterval(timer);
+  }, [essentialsPool.length]);
+
+  const dynamicGroceriesItem = groceriesPool.length
+    ? groceriesPool[groceriesIndex % groceriesPool.length]
+    : null;
+
+  const dynamicEssentialsItem = essentialsPool.length
+    ? essentialsPool[essentialsIndex % essentialsPool.length]
+    : null;
 
   const carouselItems = useMemo<ThreeDCarouselItem[]>(() => {
-    if (!fetchedProducts || fetchedProducts.length === 0) return [];
-    
-    const targets = fetchedProducts.filter(p => p.isFeatured || p.featured);
-    const pool = targets.length > 0 ? targets : fetchedProducts;
-    
-    return pool.slice(0, 5).map((p) => ({
+    if (!fetchedProducts.length) return [];
+
+    return shuffleArray(fetchedProducts).slice(0, 5).map((p) => ({
       id: p._id ?? p.id ?? Math.random().toString(),
-      title: getProductName(p),
+      title: getShortProductName(p, 34),
       brand: p.brand || p.category || "Zynta Exclusive",
-      description: p.description || "Discover premium quality selections built for your clean shopping workflow experience.",
+      description: p.description || "Discover premium quality selections...",
       price: getCurrentPrice(p),
       oldPrice: getOldPrice(p),
       imageUrl: getFeaturedImage(p),
       link: `/products/${p._id ?? p.id}`,
     }));
-  }, [fetchedProducts]);
+  }, [fetchedProducts, shuffleKey]);
+
+  const featuredProduct = useMemo(
+    () => pickFeaturedProduct(fetchedProducts),
+    [fetchedProducts]
+  );
 
   return (
     <section className="px-4 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.15fr_1fr]">
-        
-        {/* LEFT CARD CONTAINER */}
         <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-transparent p-6 shadow-2xl shadow-black/30 sm:p-8 lg:p-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(219,68,68,0.16),transparent_32%)]" />
           <div className="relative z-10 flex flex-col gap-8 text-left">
@@ -263,66 +333,74 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
                 </div>
               ))}
             </div>
-          </div>          
+          </div>
 
-          {/* INTERNAL SPREAD CARD WITH REAL DATA */}
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-1 my-6 relative z-10">
+          <div className="grid gap-4 my-6 relative z-10">
             {loadingFeatured ? (
-              <div className="h-44 flex items-center justify-center rounded-[24px] border border-dashed border-white/10 bg-black/20 text-sm text-zinc-400">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading item profile...
+              <div className="flex h-44 items-center justify-center rounded-[24px] border border-dashed border-white/10 bg-black/20 text-sm text-zinc-400">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading item profile...
               </div>
             ) : dynamicGroceriesItem ? (
-              <Link 
+              <Link
                 to={`/products/${dynamicGroceriesItem._id ?? dynamicGroceriesItem.id}`}
-                className="group block overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] p-5 transition-all hover:border-white/20 hover:bg-white/[0.06]"
+                className="group block overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] p-6 transition-all hover:border-white/20 hover:bg-white/[0.06]"
               >
-                <div className="flex flex-col md:flex-row gap-5 items-center">
-                  <div className="flex-1 text-left">
+                <div className="flex flex-col-reverse items-center gap-6 md:flex-row">
+                  <div className="flex-1 space-y-2 text-left">
                     <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#DB4444]">
                       In Stock Now
                     </p>
-                    <h3 className="mt-2 text-2xl font-semibold text-white group-hover:text-[#DB4444] transition-colors">
-                      {dynamicGroceriesItem.name || dynamicGroceriesItem.title}
+                    <h3 className="max-w-full text-xl font-semibold leading-tight text-white transition-colors group-hover:text-[#DB4444] sm:text-2xl line-clamp-2">
+                      {getShortProductName(dynamicGroceriesItem, 42)}
                     </h3>
-                    <p className="mt-2 text-sm text-zinc-400 max-w-sm line-clamp-2">
-                      {dynamicGroceriesItem.description || "Fresh selection curated directly from premium regional vendors."}
+                    <p className="max-w-sm line-clamp-2 text-sm text-zinc-400">
+                      {dynamicGroceriesItem.description ||
+                        "Fresh selection curated directly from premium regional vendors."}
                     </p>
-                    <p className="mt-4 text-xl font-bold text-white">
-                      {getCurrentPrice(dynamicGroceriesItem)}
-                    </p>
+                    <div className="pt-2">
+                      <span className="text-xl font-bold text-white">
+                        {getCurrentPrice(dynamicGroceriesItem)}
+                      </span>
+                    </div>
                   </div>
-                  
-                  <div className="h-32 w-full md:w-44 shrink-0 rounded-2xl overflow-hidden bg-black/30 border border-white/5">
+
+                  <div className="flex h-40 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/5 bg-white md:w-48">
                     {getFeaturedImage(dynamicGroceriesItem) ? (
-                      <img 
-                        src={getFeaturedImage(dynamicGroceriesItem)} 
-                        alt="Promo display" 
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      <img
+                        src={getFeaturedImage(dynamicGroceriesItem)}
+                        alt={dynamicGroceriesItem.name || "Promo display"}
+                        className="h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-[1.02]"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-xs text-zinc-600">No Image</div>
+                      <div className="text-xs text-zinc-400">No Image</div>
                     )}
                   </div>
                 </div>
               </Link>
             ) : (
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-left">
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6 text-left">
                 <p className="text-sm text-zinc-500">Daily use items</p>
                 <h3 className="mt-2 text-xl font-semibold text-white">Fresh groceries</h3>
                 <div className="mt-5 h-28 rounded-2xl border border-dashed border-white/10 bg-black/20" />
               </div>
             )}
           </div>
+
+          {featuredProduct ? (
+            <div className="mb-2 text-xs uppercase tracking-[0.24em] text-zinc-500">
+              Featured pick: {getShortProductName(featuredProduct, 28)}
+            </div>
+          ) : null}
         </div>
 
-        {/* RIGHT CARD COLUMN */}
-        <div className="grid gap-6 text-left overflow-visible">
+        <div className="grid gap-6 overflow-visible text-left">
           <div className="overflow-visible rounded-[28px] border border-white/10 bg-gradient-to-b from-[#161619] to-[#0f0f11] p-6 shadow-2xl shadow-black/40 sm:p-8">
-            <div className="flex items-center justify-between mb-6 text-left">
+            <div className="mb-6 flex items-center justify-between text-left">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#DB4444]" />
-                  <p className="text-xs uppercase font-medium tracking-[0.24em] text-zinc-400">
+                  <p className="text-xs font-medium uppercase tracking-[0.24em] text-zinc-400">
                     Featured Deals
                   </p>
                 </div>
@@ -330,42 +408,40 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
                   Trending Arrivals
                 </h2>
               </div>
-              <span className="rounded-full border border-white/5 bg-white/[0.03] px-3 py-1 text-xs text-zinc-400 font-medium tracking-wide">
+              <span className="rounded-full border border-white/5 bg-white/[0.03] px-3 py-1 text-xs font-medium tracking-wide text-zinc-400">
                 Up to 30% Off
               </span>
             </div>
 
-            <div className="w-full relative px-10 overflow-visible flex items-center justify-center">
-              {/* FIXED: Conditionally block initialization until layout tokens are fully mounted */}
+            <div className="relative flex w-full items-center justify-center overflow-visible px-10">
               {loadingFeatured || carouselItems.length === 0 ? (
-                <div className="h-[450px] w-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/5 bg-black/10 text-zinc-500 text-sm">
-                  <Loader2 className="h-5 w-5 animate-spin text-[#DB4444] mb-3" />
+                <div className="flex h-[450px] w-full flex-col items-center justify-center rounded-2xl border border-dashed border-white/5 bg-black/10 text-sm text-zinc-500">
+                  <Loader2 className="mb-3 h-5 w-5 animate-spin text-[#DB4444]" />
                   Populating carousel deck...
                 </div>
               ) : (
-                <ThreeDCarousel 
-                  items={carouselItems} 
-                  isLoading={false} 
-                  cardHeight={550} 
-                  rotateInterval={4500} 
+                <ThreeDCarousel
+                  items={carouselItems}
+                  isLoading={false}
+                  cardHeight={550}
+                  rotateInterval={4500}
                 />
               )}
             </div>
           </div>
 
-          {/* RIGHT SIDE SECONDARY CARD */}
           <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-1">
             {loadingFeatured ? (
-              <div className="h-36 flex items-center justify-center rounded-[24px] border border-dashed border-white/10 bg-black/25 text-xs text-zinc-500">
-                <Loader2 className="h-4 w-4 animate-spin mr-2 text-[#DB4444]" />
+              <div className="flex h-36 items-center justify-center rounded-[24px] border border-dashed border-white/10 bg-black/25 text-xs text-zinc-500">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin text-[#DB4444]" />
                 Loading side catalog...
               </div>
             ) : dynamicEssentialsItem ? (
               <Link
                 to={`/products/${dynamicEssentialsItem._id ?? dynamicEssentialsItem.id}`}
-                className="group block relative overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-5 shadow-lg transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06] hover:shadow-black/40"
+                className="group relative block overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-5 shadow-lg transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06] hover:shadow-black/40"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#DB4444]/0 via-[#DB4444]/[0.02] to-[#DB4444]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#DB4444]/0 via-[#DB4444]/[0.02] to-[#DB4444]/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                 <div className="relative z-10 grid grid-cols-[1fr_auto] items-center gap-4">
                   <div className="space-y-1.5 text-left">
@@ -373,27 +449,27 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
                         Home Essentials
                       </p>
-                      <span className="h-1 w-1 rounded-full bg-[#DB4444] animate-pulse" />
+                      <span className="h-1 w-1 animate-pulse rounded-full bg-[#DB4444]" />
                     </div>
-                    
-                    <h3 className="text-lg font-medium text-white tracking-tight group-hover:text-[#DB4444] transition-colors duration-200 line-clamp-1">
-                      {dynamicEssentialsItem.name || dynamicEssentialsItem.title}
+
+                    <h3 className="line-clamp-2 text-lg font-medium tracking-tight text-white transition-colors duration-200 group-hover:text-[#DB4444]">
+                      {getShortProductName(dynamicEssentialsItem, 38)}
                     </h3>
-                    
+
                     <p className="text-xl font-semibold text-zinc-100">
                       {getCurrentPrice(dynamicEssentialsItem)}
                     </p>
                   </div>
 
-                  <div className="h-20 w-20 shrink-0 relative overflow-hidden rounded-2xl bg-black/40 border border-white/10 shadow-inner">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-inner">
                     {getFeaturedImage(dynamicEssentialsItem) ? (
-                      <img 
-                        src={getFeaturedImage(dynamicEssentialsItem)} 
-                        alt="Essential product preview" 
-                        className="h-full w-full object-cover filter brightness-[0.9] contrast-[1.05] transition-transform duration-500 ease-out group-hover:scale-110 group-hover:brightness-100"
+                      <img
+                        src={getFeaturedImage(dynamicEssentialsItem)}
+                        alt="Essential product preview"
+                        className="h-full w-full object-contain p-2 transition-transform duration-500 ease-out group-hover:scale-110"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-[10px] uppercase tracking-wider text-zinc-600 font-medium">
+                      <div className="flex h-full w-full items-center justify-center text-[10px] font-medium uppercase tracking-wider text-zinc-600">
                         Item
                       </div>
                     )}
@@ -409,7 +485,6 @@ const StoreHeroSection = ({ products: productsProp }: StoreHeroSectionProps) => 
             )}
           </div>
         </div>
-
       </div>
     </section>
   );

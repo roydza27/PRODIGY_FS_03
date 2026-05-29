@@ -41,7 +41,7 @@ import AdminSupportPage from "@/features/admin/pages/AdminSupportPage";
 import AdminSellerApplicationsPage from "@/features/admin/pages/AdminSellerApplicationsPage";
 import AdminProductsFormPage from "@/features/admin/pages/AdminProductsFormPage"; // Kept consistent with file name
 
-import { ProductsPage, ProductDetailsPage } from "@/features/products";
+import { ProductsPage, ProductDetailsPage, ProductImageViewerPage } from "@/features/products";
 import { CheckoutPage } from "@/features/checkout";
 import { CartPage } from "@/features/cart";
 import HomePage from "@/features/home/pages/HomePage";
@@ -68,6 +68,7 @@ const AppRouter = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductDetailsPage />} />
+          <Route path="/products/:id/images/:index" element={<ProductImageViewerPage />} />
         </Route>
 
         {/* AUTH ONLY ROUTES (Login/Register) */}

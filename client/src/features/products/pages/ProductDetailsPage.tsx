@@ -1,3 +1,4 @@
+// ProductDetailsPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -42,14 +43,21 @@ export default function ProductDetailsPage() {
   const productSizes = product && "sizes" in product ? product.sizes ?? [] : [];
 
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState("red");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const [cartLoading, setCartLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [copyingId, setCopyingId] = useState(false);
 
   useEffect(() => {
     if (!id) return;
+
+    // Do not call review endpoints without auth
+    if (!isAuthenticated) {
+      setCanReview(false);
+      setReviews([]);
+      return;
+    }
 
     let alive = true;
 
@@ -76,18 +84,30 @@ export default function ProductDetailsPage() {
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   const images = useMemo(() => {
     if (!product) return [];
-    const base = product.images?.filter(Boolean) ?? [];
-    const fallback = [getProductImage(product)];
-    const combined = base.length ? base : fallback;
-    return [...combined, ...combined, ...combined].slice(0, 4);
+
+    const base = (product.images ?? []).filter(
+      (img): img is string => Boolean(img)
+    );
+
+    const unique = Array.from(new Set(base));
+    return unique.length > 0 ? unique : [getProductImage(product)];
   }, [product]);
+
+  useEffect(() => {
+    setSelectedSize(productSizes[0] ?? "");
+  }, [productSizes]);
+
+  useEffect(() => {
+    setSelectedColor(productColors[0] ?? "");
+  }, [productColors]);
 
   const relatedItems = useMemo(() => {
     if (!product) return [];
+
     const sameCategory = products
       .filter(
         (p) =>
@@ -145,6 +165,7 @@ export default function ProductDetailsPage() {
       navigate("/checkout");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to process order");
+    } finally {
       setCartLoading(false);
     }
   };
@@ -177,7 +198,6 @@ export default function ProductDetailsPage() {
 
       setCanReview(reviewStateRes.canReview);
       setReviews(reviewsRes.reviews || []);
-
       toast.success("Review submitted");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to submit review");
@@ -236,9 +256,7 @@ export default function ProductDetailsPage() {
           <div className="rounded-2xl border border-white/10 bg-white/3 p-6 text-center">
             <h1 className="text-xl font-semibold">Product not found</h1>
             <p className="mt-2 text-sm text-zinc-400">
-              {error
-                ? "Failed to load product details."
-                : "This product no longer exists."}
+              {error ? "Failed to load product details." : "This product no longer exists."}
             </p>
             <Button className="mt-4" onClick={() => navigate("/products")}>
               Back to products
@@ -254,13 +272,20 @@ export default function ProductDetailsPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 text-left sm:px-6 lg:px-10 lg:py-12">
         <ProductBreadcrumb crumbs={breadcrumbs} />
 
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] xl:gap-12">
-          <ProductImageGallery images={images} productName={product.name} />
+        <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(380px,0.85fr)] xl:gap-12">
+          <div className="min-w-0">
+            <ProductImageGallery
+              images={images}
+              productName={product.name}
+              productId={product._id}
+            />
+          </div>
 
-          <div className="flex flex-col gap-6 rounded-3xl border border-white/8 bg-white/[0.025] p-6 sm:p-7 lg:p-9">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium tracking-wide text-zinc-300">
-                ID: <span className="font-mono">{product._id}</span>
+          <div className="min-w-0 rounded-2xl border border-white/8 bg-white/[0.025] p-4 sm:rounded-3xl sm:p-6 lg:p-8 flex flex-col gap-6">
+            <div className="flex flex-wrap items-start gap-6 sm:items-center">
+              <span className="max-w-full rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium tracking-wide text-zinc-300">
+                <span className="mr-1">ID:</span>
+                <span className="font-mono break-all align-middle">{product._id}</span>
               </span>
 
               <button
@@ -279,42 +304,48 @@ export default function ProductDetailsPage() {
               ) : null}
             </div>
 
-            <ProductInfo
-              name={product.name}
-              category={product.category}
-              price={formatPrice(product.price)}
-              description={product.description}
-              rating={product.rating ?? 0}
-              reviewCount={product.reviewCount ?? 0}
-              inStock={(product.stock ?? 0) > 0}
-              isWishlisted={isWishlisted(product._id)}
-              onWishlistToggle={handleWishlist}
-            />
+            <div className="min-w-0 gap">
+              <ProductInfo
+                name={product.name}
+                category={product.category}
+                price={formatPrice(product.price)}
+                description={product.description}
+                rating={product.rating ?? 0}
+                reviewCount={product.reviewCount ?? 0}
+                inStock={(product.stock ?? 0) > 0}
+                isWishlisted={isWishlisted(product._id)}
+                onWishlistToggle={handleWishlist}
+              />
+            </div>
 
-            <ProductOptions
-              colors={productColors}
-              selectedColor={selectedColor}
-              onColorChange={setSelectedColor}
-              sizes={productSizes}
-              selectedSize={selectedSize}
-              onSizeChange={setSelectedSize}
-            />
+            <div className="min-w-0">
+              <ProductOptions
+                colors={productColors}
+                selectedColor={selectedColor}
+                onColorChange={setSelectedColor}
+                sizes={productSizes}
+                selectedSize={selectedSize}
+                onSizeChange={setSelectedSize}
+              />
+            </div>
 
-            <ProductActions
-              quantity={quantity}
-              onIncrement={() => setQuantity((q) => q + 1)}
-              onDecrement={() => setQuantity((q) => Math.max(1, q - 1))}
-              onBuyNow={handleBuyNow}
-              onAddToCart={handleAddToCart}
-              loading={cartLoading}
-            />
+            <div className="min-w-0">
+              <ProductActions
+                quantity={quantity}
+                onIncrement={() => setQuantity((q) => q + 1)}
+                onDecrement={() => setQuantity((q) => Math.max(1, q - 1))}
+                onBuyNow={handleBuyNow}
+                onAddToCart={handleAddToCart}
+                loading={cartLoading}
+              />
+            </div>
 
             <Button
               type="button"
               variant="outline"
               onClick={handleWishlist}
               disabled={wishlistLoading}
-              className="h-12 rounded-xl border-white/10 bg-black/20 text-white hover:bg-white/5"
+              className="h-12 w-full rounded-xl border-white/10 bg-black/20 text-white hover:bg-white/5"
             >
               <Heart
                 className={`mr-2 h-4 w-4 ${

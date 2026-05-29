@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import { Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
@@ -30,13 +32,12 @@ export default function ProductsPage() {
   const onSale = searchParams.get("onSale") === "1";
   const freeShipping = searchParams.get("freeShipping") === "1";
 
-  // FIXED: Added 'sortBy !== "newest"' to the filter check.
-  // If the user requests a custom sort order, it hides the promotional blocks
-  // and applies the sort rules natively across the entire catalog grid.
+  // FIXED: Checked if the 'sort' key exists explicitly in the search params query string.
+  // This breaks the preview loop and unlocks the full catalog grid view.
   const hasActiveFilters =
     search.length > 0 ||
     category.length > 0 ||
-    sortBy !== "newest" ||
+    searchParams.has("sort") || 
     price.length > 0 ||
     rating.length > 0 ||
     inStock ||
@@ -146,7 +147,7 @@ export default function ProductsPage() {
           ) : (
             <div className="flex flex-col gap-12 sm:gap-16 overflow-visible">
               
-              {/* Promotional Showcase Layout: Now correctly disappears when custom sorting is active */}
+              {/* Promotional Showcase Layout: Disappears when custom sorting is active */}
               <AnimatePresence mode="wait">
                 {!hasActiveFilters ? (
                   <motion.div 
@@ -210,7 +211,6 @@ export default function ProductsPage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {/* Displays the entire sorted catalog when filters/sorting are applied, or slices to 3 when on default home dashboard */}
                       <ProductGrid 
                         products={hasActiveFilters ? filteredProducts : filteredProducts.slice(0, 3)} 
                       />

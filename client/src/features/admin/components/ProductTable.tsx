@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { GripVertical, Edit3, Trash2, Box, Layers, Tag, Eye } from "lucide-react";
 
@@ -38,7 +38,7 @@ function getStockBadgeClass(stock?: number) {
 
 function DragHandle() {
   return (
-    <div className="flex size-7 items-center justify-center rounded-md text-[#A1A1AA] hover:bg-white/5">
+    <div className="flex size-7 items-center justify-center rounded-md text-[#A1A1AA] hover:bg-white/5 touch-none">
       <GripVertical className="size-4" />
     </div>
   );
@@ -55,7 +55,7 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
     console.log("Committed search filtering variables:", { search, department, status });
   };
 
-  const columns = useMemo<ColumnDef<Product>[]>(() => [
+  const columns = useMemo<ColumnDef<Product> []>(() => [
     { id: "drag", header: () => null, cell: () => <DragHandle /> },
     {
       id: "select",
@@ -148,7 +148,6 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
             Edit
           </Button>
           
-          {/* FIXED: Removed nested ConfirmDialog. Trigger directly invokes callback */}
           <Button
             type="button"
             variant="ghost"
@@ -180,7 +179,7 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
   }, [products, search, department, status]);
 
   return (
-    <TableData
+    <TableData<Product>
       data={filteredProducts}
       columns={columns}
       selectedItem={selectedProduct}
@@ -188,94 +187,101 @@ export default function ProductTable({ products, onEdit, onDelete }: Props) {
       filterToolbar={
         <TableFilters
           search={search}
+          // FIXED: Linked state setter directly to ensure text string modifications sync to useMemo
           setSearch={setSearch}
           department={department}
+          // FIXED: Linked state setter directly to filter warehouse category selections
           setDepartment={setDepartment}
           status={status}
+          // FIXED: Linked state setter directly to filter storefront status choices
           setStatus={setStatus}
           onApply={handleApplyFilters}
         />
       }
     >
-      <RowDetailsOverlay
-        title={selectedProduct?.name || "Product Catalog Details"}
-        description={selectedProduct?.brand ? `Brand Reference: ${selectedProduct.brand}` : "Logistical Inventory Spec Sheet"}
-        variant="drawer"
-      >
-        {selectedProduct && (
-          <div className="space-y-6">
-            
-            <div className="flex items-center gap-4 border-b border-white/5 pb-4">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-black/30 border border-white/10 flex items-center justify-center">
-                <img 
-                  src={selectedProduct.images?.[0] || "/placeholder-product.png"} 
-                  alt={selectedProduct.name} 
-                  className="h-full w-full object-contain p-1" 
-                />
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-lg font-semibold tracking-tight text-white leading-tight">{selectedProduct.name}</h4>
-                <Badge className={`rounded-full border px-2 py-0.5 font-normal uppercase text-[9px] tracking-wider ${statusStyles[selectedProduct.status || ""] || "border-white/10 text-white"}`}>
-                  {selectedProduct.status || "unknown"}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
-                  <Tag className="size-4" /> Retail Price Value
+      {({ item: currentProduct, open, onOpenChange }: { item: Product | null, open: boolean, onOpenChange: (open: boolean) => void }) => (
+        <RowDetailsOverlay
+          open={open}
+          onOpenChange={onOpenChange}
+          title={currentProduct?.name || "Product Catalog Details"}
+          description={currentProduct?.brand ? `Brand Reference: ${currentProduct.brand}` : "Logistical Inventory Spec Sheet"}
+          variant="drawer"
+        >
+          {currentProduct && (
+            <div className="space-y-6">
+              
+              <div className="flex items-center gap-4 border-b border-white/5 pb-4">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-black/30 border border-white/10 flex items-center justify-center">
+                  <img 
+                    src={currentProduct.images?.[0] || "/placeholder-product.png"} 
+                    alt={currentProduct.name} 
+                    className="h-full w-full object-contain p-1" 
+                  />
                 </div>
-                <p className="text-lg font-bold text-white font-mono">₹{selectedProduct.price?.toLocaleString()}</p>
+                <div className="space-y-1">
+                  <h4 className="text-lg font-semibold tracking-tight text-white leading-tight">{currentProduct.name}</h4>
+                  <Badge className={`rounded-full border px-2 py-0.5 font-normal uppercase text-[9px] tracking-wider ${statusStyles[currentProduct.status || ""] || "border-white/10 text-white"}`}>
+                    {currentProduct.status || "unknown"}
+                  </Badge>
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
-                  <Box className="size-4" /> Real-time Warehouse Stock
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
+                  <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
+                    <Tag className="size-4" /> Retail Price Value
+                  </div>
+                  <p className="text-lg font-bold text-white font-mono">₹{currentProduct.price?.toLocaleString()}</p>
                 </div>
-                <p className="text-sm font-semibold text-white">
-                  {selectedProduct.stock ?? 0} units ({getStockLabel(selectedProduct.stock)})
+
+                <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
+                  <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
+                    <Box className="size-4" /> Real-time Warehouse Stock
+                  </div>
+                  <p className="text-sm font-semibold text-white">
+                    {currentProduct.stock ?? 0} units ({getStockLabel(currentProduct.stock)})
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
+                  <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
+                    <Layers className="size-4" /> Storefront Category
+                  </div>
+                  <p className="text-sm font-semibold capitalize text-white">{currentProduct.category || "—"}</p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
+                  <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
+                    <Eye className="size-4" /> Item Brand Identifier
+                  </div>
+                  <p className="text-sm font-semibold text-white">{currentProduct.brand || "—"}</p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
+                <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">Catalog Item Summary</p>
+                <p className="text-sm leading-relaxed text-zinc-300">
+                  {currentProduct.description || "No specific detailed descriptions registered for this catalog item asset."}
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
-                  <Layers className="size-4" /> Storefront Category
-                </div>
-                <p className="text-sm font-semibold capitalize text-white">{selectedProduct.category || "—"}</p>
+              <div className="pt-4 border-t border-white/5 flex gap-3">
+                <Button
+                  type="button"
+                  className="flex-1 bg-white/10 text-white hover:bg-white/15 border border-white/10 rounded-xl font-medium"
+                  onClick={() => {
+                    onEdit(currentProduct);
+                    setSelectedProduct(null);
+                  }}
+                >
+                  Launch Product Editor
+                </Button>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">
-                  <Eye className="size-4" /> Item Brand Identifier
-                </div>
-                <p className="text-sm font-semibold text-white">{selectedProduct.brand || "—"}</p>
-              </div>
             </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-[#A1A1AA]">Catalog Item Summary</p>
-              <p className="text-sm leading-relaxed text-zinc-300">
-                {selectedProduct.description || "No specific detailed descriptions registered for this catalog item asset."}
-              </p>
-            </div>
-
-            <div className="pt-4 border-t border-white/5 flex gap-3">
-              <Button
-                type="button"
-                className="flex-1 bg-white/10 text-white hover:bg-white/15 border border-white/10 rounded-xl font-medium"
-                onClick={() => {
-                  onEdit(selectedProduct);
-                  setSelectedProduct(null);
-                }}
-              >
-                Launch Product Editor
-              </Button>
-            </div>
-
-          </div>
-        )}
-      </RowDetailsOverlay>
+          )}
+        </RowDetailsOverlay>
+      )}
     </TableData>
   );
 }
