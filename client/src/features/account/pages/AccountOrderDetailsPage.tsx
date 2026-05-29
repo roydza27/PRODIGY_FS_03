@@ -22,7 +22,17 @@ import {
   Hash,
   ReceiptText,
   Copy,
+  XCircle,
+  Loader2
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -144,6 +154,8 @@ export default function AccountOrderDetailsPage() {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -195,10 +207,33 @@ export default function AccountOrderDetailsPage() {
       0,
     ) ?? order.total ?? 0;
 
+// REPLACE your existing handleCancelOrder with this:
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    
+    try {
+      setIsCancelling(true);
+      await orderService.cancelOrder(order._id);
+      
+      toast.success("Order cancelled successfully");
+      setOrder({ ...order, status: "cancelled" } as Order); 
+      
+      // Close the modal cleanly after the network request finishes
+      setShowCancelDialog(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to cancel order");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const shippingAddress = (order as any).shippingAddress ?? {};
   const payment = (order as any).payment ?? (order as any).paymentMethod ?? {};
   const tracking = (order as any).tracking ?? {};
   const note = (order as any).note ?? (order as any).customerNote ?? "";
+
+  const currentStatus = normalizeStatus(order.status);
+  const canCancel = !["shipped", "delivered", "cancelled"].includes(currentStatus);
 
   return (
     <div className="min-h-screen bg-[#111113]/95 px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
@@ -459,10 +494,62 @@ export default function AccountOrderDetailsPage() {
                 <HelpCircle className="mr-2 h-4 w-4" />
                 Contact Support
               </Button>
+
+              {canCancel && (
+                <Button 
+                  variant="outline" 
+                  className="w-full rounded-2xl border-red-500/20 bg-transparent text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                  onClick={() => setShowCancelDialog(true)} 
+                  disabled={isCancelling}
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Cancel Order
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
+      {/* Drop this right before the final two closing </div> tags */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent className="border-white/10 bg-[#121214] text-white rounded-2xl max-w-md p-6 shadow-2xl">
+          <DialogHeader className="text-left space-y-2">
+            <DialogTitle className="text-xl font-semibold text-white tracking-tight">
+              Cancel this order?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-zinc-400 leading-relaxed">
+              Are you sure you want to cancel this order? This will immediately halt fulfillment operations and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DialogFooter className="mt-6 flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-white/5">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowCancelDialog(false)}
+              disabled={isCancelling}
+              className="rounded-xl border border-white/5 text-zinc-400 hover:text-white hover:bg-white/5 font-medium px-4"
+            >
+              Keep Order
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCancelOrder}
+              disabled={isCancelling}
+              className="rounded-xl bg-[#DB4444] text-white hover:bg-[#c53a3a] font-medium px-4 flex items-center justify-center min-w-[120px]"
+            >
+              {isCancelling ? (
+                <>
+                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                "Confirm Cancel"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

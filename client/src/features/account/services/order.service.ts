@@ -37,4 +37,8 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 export const orderService = {
   getAll: () => request<OrdersResponse>("/orders"),
   getById: (id: string) => request<OrderResponse>(`/orders/${id}`),
+  // Add this inside your exported orderService object:
+  cancelOrder: (id: string) => request<{ success: boolean }>(`/orders/${id}/cancel`, {
+    method: "PATCH",
+  }),
 };

@@ -14,7 +14,8 @@ const initialForm: CheckoutFormData = {
 };
 
 type Props = {
-  onSubmit: (data: CheckoutFormData) => Promise<unknown>;
+  // FIXED: Now accepts both standard synchronous functions (void) OR async API calls (Promise)
+  onSubmit: (data: CheckoutFormData) => void | Promise<void>;
   disabled?: boolean;
 };
 
@@ -127,7 +128,7 @@ export default function CheckoutForm({ onSubmit, disabled }: Props) {
         disabled={disabled}
         className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-red-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {disabled ? "Placing Order..." : "Place Order"}
+        {disabled ? "Processing..." : "Continue"}
       </button>
     </form>
   );

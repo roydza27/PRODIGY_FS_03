@@ -61,7 +61,10 @@ export async function getAllOrdersController(req: Request, res: Response, next: 
 
 export async function getOrderByIdController(req: Request, res: Response, next: NextFunction) {
   try {
-    const order = await getOrderById(req.params.id);
+    // FIXED: Cast params.id to string to satisfy strict Express types
+    const orderId = req.params.id as string;
+    const order = await getOrderById(orderId);
+    
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
@@ -85,7 +88,10 @@ export async function getOrderByIdController(req: Request, res: Response, next: 
 export async function updateOrderStatusController(req: Request, res: Response, next: NextFunction) {
   try {
     const parsed = updateOrderStatusSchema.parse(req.body);
-    const order = await updateOrderStatus(req.params.id, parsed.status);
+    // FIXED: Cast params.id to string to satisfy strict Express types
+    const orderId = req.params.id as string;
+    
+    const order = await updateOrderStatus(orderId, parsed.status);
 
     return res.json({
       success: true,
@@ -96,3 +102,39 @@ export async function updateOrderStatusController(req: Request, res: Response, n
     next(error);
   }
 }
+
+export const cancelOrderController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orderId = req.params.id as string;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    // FIXED: Used your internal service function instead of raw Mongoose Order model
+    const order = await getOrderById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // FIXED: Security Check checking against req.user?.userId instead of undefined req.user._id
+    if (String(order.user) !== userId) {
+      return res.status(403).json({ success: false, message: "Not authorized to cancel this order" });
+    }
+
+    // Business Logic Check: Only allow cancellation if it hasn't shipped
+    if (["shipped", "delivered", "cancelled"].includes(order.status)) {
+      return res.status(400).json({ success: false, message: `Cannot cancel an order that is already ${order.status}` });
+    }
+
+    // FIXED: Used your internal update service to maintain consistent logic architecture
+    await updateOrderStatus(orderId, "cancelled");
+
+    return res.status(200).json({ success: true, message: "Order cancelled successfully" });
+  } catch (error) {
+    // FIXED: Switched to next(error) to keep standard Express error handling consistent
+    next(error);
+  }
+};
