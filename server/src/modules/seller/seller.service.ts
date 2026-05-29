@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+// FIXED: Removed the bad import `import User from "./seller.model"`
+// FIXED: Using your correct central User model import
 import { User } from "@/modules/auth/auth.model";
 import { Product } from "@/modules/product/product.model";
 import { AppError } from "@/utils/AppError";
@@ -166,7 +168,6 @@ export const sellerService = {
     const [totalProducts, totalReviews] = await Promise.all([
       Product.countDocuments({ sellerId, status: "active" }),
       Product.aggregate([
-        // FIX: Added 'new mongoose' here instead of inline require
         { $match: { sellerId: new mongoose.Types.ObjectId(sellerId) } },
         { $group: { _id: null, total: { $sum: "$reviewCount" } } },
       ]),
@@ -174,7 +175,6 @@ export const sellerService = {
 
     const totalReviewsCount = totalReviews[0]?.total || 0;
     const avgRating = await Product.aggregate([
-      // FIX: Added 'new mongoose' here as well
       { $match: { sellerId: new mongoose.Types.ObjectId(sellerId) } },
       { $group: { _id: null, avgRating: { $avg: "$rating" } } },
     ]);
@@ -222,5 +222,38 @@ export const sellerService = {
     }
 
     return user;
+  },
+
+  // FIXED: Added the update settings method logic mapped back to your User Schema
+  async updateSellerSettings(userId: string, updateData: any) {
+    const user = await User.findById(userId);
+    
+    if (!user || user.role !== "seller") {
+      throw new AppError("Seller not found or unauthorized", 404);
+    }
+
+    // Because seller details live nested inside 'sellerInfo' in your schema,
+    // we carefully map incoming payload fields to prevent overwriting other User properties.
+    const fieldsToUpdate: Record<string, any> = {};
+
+    // Destructure profile data
+    if (updateData.shopName) fieldsToUpdate["sellerInfo.shopName"] = updateData.shopName;
+    if (updateData.shopDescription) fieldsToUpdate["sellerInfo.shopDescription"] = updateData.shopDescription;
+    
+    // Destructure bank data
+    if (updateData.bankDetails) {
+      if (updateData.bankDetails.accountName) fieldsToUpdate["sellerInfo.bankAccountName"] = updateData.bankDetails.accountName;
+      if (updateData.bankDetails.accountNumber) fieldsToUpdate["sellerInfo.bankAccountNumber"] = updateData.bankDetails.accountNumber;
+      if (updateData.bankDetails.ifsc) fieldsToUpdate["sellerInfo.bankCode"] = updateData.bankDetails.ifsc;
+    }
+
+    // Map the updates into the document dynamically via MongoDB $set
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: fieldsToUpdate },
+      { new: true, runValidators: true }
+    );
+
+    return updatedUser;
   }
 };

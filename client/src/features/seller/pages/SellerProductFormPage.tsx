@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 
 import ProductForm, {
   type ProductFormValues,
-  type ProductStatus,
 } from "@/features/products/components/ProductForm";
 import { useSellerProducts } from "../hooks/use-seller-products";
 import { sellerProductService } from "../services/seller-product.service";
@@ -79,16 +78,15 @@ export default function SellerProductFormPage() {
     void loadProduct();
   }, [id, isEditMode, navigate]);
 
-  const handleSubmit = async (values: ProductFormValues & { slug?: string }) => {
+  // FIXED: Adjusted the type signature parameter to match the strict 'slug: string' schema of ProductForm
+  const handleSubmit = async (values: ProductFormValues & { slug: string }) => {
     try {
-      // Deconstruct the slug so it isn't forwarded blindly to standard API engines if unsupported
-      const { slug, ...payload } = values;
-
+      // FIXED: Send the complete values object directly to the API so the required backend slug path is satisfied
       if (isEditMode && id) {
-        await updateProduct(id, payload);
+        await updateProduct(id, values);
         toast.success("Product configurations updated successfully");
       } else {
-        await createProduct(payload);
+        await createProduct(values);
         toast.success("Product listing created successfully");
       }
 
@@ -98,7 +96,6 @@ export default function SellerProductFormPage() {
     }
   };
 
-  // Modern Loading Fallback consistent with your app's theme
   if (isEditMode && isLoadingProduct && !initialValues) {
     return (
       <div className="min-h-screen bg-[#09090B] px-4 py-6 text-white flex flex-col items-center justify-center gap-3">

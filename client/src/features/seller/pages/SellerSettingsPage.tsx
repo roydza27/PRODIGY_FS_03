@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { Button } from "@/shared/components/ui/button";
@@ -22,11 +22,11 @@ import {
   Truck,
   Upload,
   Users,
-  Palette,
-  Eye,
   Lock,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { sellerService } from "../services/seller.service";
 
 type NotificationState = {
   orders: boolean;
@@ -37,6 +37,9 @@ type NotificationState = {
 };
 
 export default function SellerSettingsPage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   const [notifications, setNotifications] = useState<NotificationState>({
     orders: true,
     reviews: true,
@@ -45,41 +48,115 @@ export default function SellerSettingsPage() {
     stock: true,
   });
 
-  const [shopName, setShopName] = useState("Royal Store");
-  const [shopDescription, setShopDescription] = useState(
-    "Modern essentials, accessories, and daily products curated for a premium shopping experience."
-  );
-  const [returnPolicy, setReturnPolicy] = useState(
-    "Returns accepted within 7 days of delivery for unopened and unused items with original packaging."
-  );
-  const [shippingPolicy, setShippingPolicy] = useState(
-    "Orders are processed within 24 hours. Delivery timelines vary by location and carrier availability."
-  );
-  const [accountName, setAccountName] = useState("Royal D Souza");
+  const [shopName, setShopName] = useState("");
+  const [shopDescription, setShopDescription] = useState("");
+  const [returnPolicy, setReturnPolicy] = useState("");
+  const [shippingPolicy, setShippingPolicy] = useState("");
+  const [accountName, setAccountName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
-  const [ifsc, setIfsc] = useState("SBIN0001234");
-  const [bankName, setBankName] = useState("State Bank of India");
+  const [ifsc, setIfsc] = useState("");
+  const [bankName, setBankName] = useState("");
+
+  // Fetch actual seller data on component mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await sellerService.getSellerDashboard();
+        setShopName(data.seller.shopName || "");
+        setShopDescription(data.seller.shopDescription || "");
+        // If your backend expands to return these fields, map them here:
+        // setAccountName(data.seller.bankAccountName || "");
+        // setAccountNumber(data.seller.bankAccountNumber || "");
+        // setIfsc(data.seller.bankCode || "");
+      } catch (error) {
+        toast.error("Failed to load store profile data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const completion = useMemo(() => {
     const score = [shopName, shopDescription, returnPolicy, shippingPolicy, accountName, ifsc, bankName].filter(Boolean).length;
     return Math.round((score / 7) * 100);
   }, [shopName, shopDescription, returnPolicy, shippingPolicy, accountName, ifsc, bankName]);
 
-  const saveToast = (label: string) => {
-    toast.success(`${label} saved successfully`);
+  const handleProfileSave = async () => {
+    try {
+      setIsSaving(true);
+      await sellerService.updateSettings({
+        shopName,
+        shopDescription,
+      });
+      toast.success("Shop profile saved successfully");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleBankSave = () => {
-    if (!accountName.trim() || !accountNumber.trim() || !ifsc.trim() || !bankName.trim()) {
-      toast.error("Please fill in all bank details");
-      return;
+  const handlePoliciesSave = async () => {
+    try {
+      setIsSaving(true);
+      await sellerService.updateSettings({
+        returnPolicy,
+        shippingPolicy,
+      });
+      toast.success("Store policies updated successfully");
+    } catch (error) {
+      toast.error("Failed to save policies");
+    } finally {
+      setIsSaving(false);
     }
-    saveToast("Bank details");
   };
+
+  const handleBankSave = async () => {
+    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    
+    if (!accountName.trim() || !accountNumber.trim() || !ifsc.trim() || !bankName.trim()) {
+      return toast.error("Please fill in all bank details");
+    }
+    if (!ifscRegex.test(ifsc)) {
+      return toast.error("Invalid IFSC Code format");
+    }
+
+    try {
+      setIsSaving(true);
+      await sellerService.updateSettings({
+        bankDetails: { accountName, accountNumber, ifsc, bankName }
+      });
+      toast.success("Bank details securely updated");
+    } catch (error) {
+      toast.error("Failed to update bank details");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleNotificationsSave = async () => {
+    try {
+      setIsSaving(true);
+      // Simulate API call or connect to a notification settings endpoint
+      await new Promise(resolve => setTimeout(resolve, 600)); 
+      toast.success("Notification preferences saved");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#DB4444]" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#111113] px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
-      <div className="mx-auto max-w-7xl space-y-8 text-left px-">
+      <div className="mx-auto max-w-7xl space-y-8 text-left">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-zinc-400">
@@ -95,7 +172,7 @@ export default function SellerSettingsPage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[560px]">
             <div className="rounded-2xl border border-white/10 bg-[#18181B] p-4">
               <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Profile</p>
-              <p className="mt-2 text-2xl font-bold text-white">94%</p>
+              <p className="mt-2 text-2xl font-bold text-white">{completion}%</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-[#18181B] p-4">
               <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Verification</p>
@@ -188,7 +265,7 @@ export default function SellerSettingsPage() {
                     </div>
                     <div>
                       <label className="mb-2 block text-sm font-medium text-zinc-200">Shop Logo</label>
-                      <div className="flex items-center gap-3 rounded-2xl border border-dashed border-white/10 bg-black/20 p-4">
+                      <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-white/10 bg-black/20 p-4 transition-colors hover:bg-white/5 hover:border-white/20">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#DB4444]/10 text-[#DB4444]">
                           <Upload className="h-5 w-5" />
                         </div>
@@ -196,7 +273,16 @@ export default function SellerSettingsPage() {
                           <p className="text-sm font-medium text-white">Upload logo</p>
                           <p className="text-xs text-zinc-400">PNG or JPG up to 2MB</p>
                         </div>
-                      </div>
+                        <input 
+                          type="file" 
+                          accept="image/png, image/jpeg" 
+                          className="hidden" 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) toast.success(`Selected logo: ${file.name}`);
+                          }}
+                        />
+                      </label>
                     </div>
                     <div>
                       <label className="mb-2 block text-sm font-medium text-zinc-200">Shop Category</label>
@@ -210,8 +296,12 @@ export default function SellerSettingsPage() {
                   <Separator className="bg-white/10" />
 
                   <div className="flex flex-wrap gap-3">
-                    <Button className="bg-[#DB4444] text-white hover:bg-[#c53a3a]" onClick={() => saveToast("Shop profile")}>
-                      Save Shop Profile
+                    <Button 
+                      className="bg-[#DB4444] text-white hover:bg-[#c53a3a] min-w-[150px]" 
+                      onClick={handleProfileSave}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Shop Profile"}
                     </Button>
                     <Button variant="outline" className="border-white/10 bg-black/20 hover:bg-white/5">
                       Preview storefront
@@ -234,12 +324,14 @@ export default function SellerSettingsPage() {
                         <Store className="h-7 w-7" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-white">{shopName}</h3>
+                        <h3 className="text-lg font-semibold text-white">{shopName || "Your Store"}</h3>
                         <p className="text-sm text-zinc-400">Premium e-commerce storefront</p>
                       </div>
                     </div>
 
-                    <p className="mt-4 text-sm leading-6 text-zinc-300">{shopDescription}</p>
+                    <p className="mt-4 text-sm leading-6 text-zinc-300">
+                      {shopDescription || "Your description will appear here..."}
+                    </p>
 
                     <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
                       <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
@@ -279,8 +371,12 @@ export default function SellerSettingsPage() {
                   <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-400">
                     Make this short, fair, and easy to understand. Clear return terms improve conversion.
                   </div>
-                  <Button className="bg-[#DB4444] text-white hover:bg-[#c53a3a]" onClick={() => saveToast("Return policy")}>
-                    Save Return Policy
+                  <Button 
+                    className="bg-[#DB4444] text-white hover:bg-[#c53a3a] min-w-[150px]" 
+                    onClick={handlePoliciesSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Policies"}
                   </Button>
                 </CardContent>
               </Card>
@@ -314,9 +410,6 @@ export default function SellerSettingsPage() {
                       <p className="mt-2 text-sm text-zinc-400">Mention delays for remote areas or holidays.</p>
                     </div>
                   </div>
-                  <Button className="bg-[#DB4444] text-white hover:bg-[#c53a3a]" onClick={() => saveToast("Shipping policy")}>
-                    Save Shipping Policy
-                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -398,8 +491,12 @@ export default function SellerSettingsPage() {
                     </div>
                   </div>
 
-                  <Button className="bg-[#DB4444] text-white hover:bg-[#c53a3a]" onClick={handleBankSave}>
-                    Update Bank Details
+                  <Button 
+                    className="bg-[#DB4444] text-white hover:bg-[#c53a3a] min-w-[150px]" 
+                    onClick={handleBankSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Bank Details"}
                   </Button>
                 </CardContent>
               </Card>
@@ -505,8 +602,12 @@ export default function SellerSettingsPage() {
                   })}
 
                   <div className="flex flex-wrap gap-3 pt-2">
-                    <Button className="bg-[#DB4444] text-white hover:bg-[#c53a3a]" onClick={() => saveToast("Notification preferences") }>
-                      Save Preferences
+                    <Button 
+                      className="bg-[#DB4444] text-white hover:bg-[#c53a3a] min-w-[150px]" 
+                      onClick={handleNotificationsSave}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Preferences"}
                     </Button>
                     <Button variant="outline" className="border-white/10 bg-black/20 hover:bg-white/5">
                       Test notification

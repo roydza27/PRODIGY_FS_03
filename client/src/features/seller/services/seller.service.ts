@@ -88,5 +88,12 @@ export const sellerService = {
     );
     return response.data;
   },
+  async updateSettings(data: any) {
+    const response = await api.patch<{
+      success: boolean;
+      message: string;
+    }>(`${API_BASE}/settings`, data);
+    return response.data;
+  },
   
 };

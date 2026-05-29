@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { sellerService } from "./seller.service";
 import { AppError } from "@/utils/AppError";
+import { updateSellerSettings } from "./seller.service";
 
 // User: Apply to become a seller
 export const handleApplyForSeller = async (
@@ -181,6 +182,31 @@ export const handleGetApplicationStatus = async (
     res.status(200).json({
       success: true,
       data: application,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleUpdateSellerSettings = async (
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.userId || (req.user as any)?._id; 
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    // 2. FIXED: Call the method *inside* the sellerService object
+    const updatedProfile = await sellerService.updateSellerSettings(userId, req.body);
+
+    return res.status(200).json({
+      success: true,
+      message: "Seller settings updated successfully",
+      data: updatedProfile,
     });
   } catch (error) {
     next(error);

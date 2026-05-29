@@ -8,6 +8,7 @@ import {
   handleRejectSeller,
   handleGetSellerDashboard,
   handleGetSellerProfile,
+  handleUpdateSellerSettings,
 } from "./seller.controller";
 
 import {
@@ -122,5 +123,15 @@ router.post(
   validateBody(sellerApprovalSchema),
   handleRejectSeller
 );
+
+// Add this under your protected seller routes
+router.patch(
+  "/settings",
+  protect,
+  authorizeRoles("seller"),
+  // validateBody(updateSellerSettingsSchema), // Optional: Add Zod validation
+  handleUpdateSellerSettings // You'll need to create this in seller.controller.ts
+);
+
 
 export default router;
