@@ -18,6 +18,51 @@
 > 
 > *[Placeholder for Application Screenshots]*
 
+## 📱 Application Preview
+
+### 🖥️ Interactive Demo Walkthrough
+GitHub natively streams video files right inside the Markdown player. Look at the ecosystem overview and feature workflow timeline:
+
+<video src="https://raw.githubusercontent.com/roydza27/PRODIGY_FS_03/main/assests/Zyntra.webm" width="100%" controls data-canonical-src="https://raw.githubusercontent.com/roydza27/PRODIGY_FS_03/main/assests/Zyntra.webm">
+  Your browser does not support the video tag.
+</video>
+
+### 📸 Interface Galleries
+
+<table width="100%">
+  <tr>
+    <td width="50%" align="center">
+      <strong>🛒 Customer Storefront Portal</strong>
+      <br />
+      <img src="./assests/Home-Screen.png" alt="Zyntra Customer Home View" width="100%"/>
+    </td>
+    <td width="50%" align="center">
+      <strong>📦 Detailed Product Insight</strong>
+      <br />
+      <img src="./assests/ProductDetail-Screen.png" alt="Product Detail Interface" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <strong>🔍 Unified Catalog Exploration</strong>
+      <br />
+      <img src="./assests/Products-Screen.png" alt="Products Grid View" width="100%"/>
+    </td>
+    <td width="50%" align="center">
+      <strong>🛍️ Active Shopping Basket</strong>
+      <br />
+      <img src="./assests/Cart-Screen.png" alt="Cart Interface" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <strong>💳 Secure Order Checkout Gateway</strong>
+      <br />
+      <img src="./assests/Checkout-Screen.png" alt="Checkout Management Process" width="100%"/>
+    </td>
+  </tr>
+</table>
+
 ## ✨ Overview
 
 This project is a production-ready, full-stack multi-vendor e-commerce platform. Designed with performance, scalability, and developer experience in mind, it utilizes a modular, feature-based architecture on the client and a clean, service-oriented architecture on the backend.
