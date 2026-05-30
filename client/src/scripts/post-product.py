@@ -3,7 +3,7 @@ import re
 import requests
 
 API_URL = "http://localhost:5000/api/products"
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTA4YWVjYWU0MWI0OTMxYjgxNjE3MmMiLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTk0NzU0MywiZXhwIjoxNzgwNTUyMzQzfQ.YlLQakzsoxc1Zd6JuIMCpubs6XAt901F47Dhc60rk1Y"  # optional auth token
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTE3NDIwYTM1OWJmMTQyOGRmMjdiNWIiLCJlbWFpbCI6InJveWR6YTA2MkBnbWFpbC5jb20iLCJyb2xlIjoic2VsbGVyIiwiaWF0IjoxNzgwMDY2NzQ4LCJleHAiOjE3ODA2NzE1NDh9.i8E1FRqOY9uGsv1CwkVa9wHL8rRcc5_Jf-B4abHvQyc"
 
 
 headers = {

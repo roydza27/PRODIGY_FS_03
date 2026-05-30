@@ -1,67 +1,80 @@
 {
-  "source_url": "https://www.flipkart.com/tp-link-archer-c50-ac1200-wireless-dual-band-router-2-4-ghz-5-ghz-1200-mbps-wifi-speed-external-antenna-ethernet-cable-broadband/p/itmfy5x6fsapzdad",
-  "product_title": "TP-Link Archer C50 AC1200 Wireless Dual Band Router",
-  "short_title": "TP-Link Archer C50",
+  "source_url": "https://www.flipkart.com/realme-techlife-80-cm-32-inch-qled-hd-ready-smart-google-tv/p/itm5703931060ce7",
+  "product_title": "realme TechLife 80 cm (32 inch) QLED HD Ready Smart Google TV",
+  "short_title": "realme TechLife 32 QLED TV",
   "category": "electronics",
   "status": "active",
   "featured": true,
-  "current_price": "1599",
-  "original_price": "3499",
-  "stock": 25,
+  "current_price": "10299",
+  "original_price": "23999",
+  "stock": 15,
   "image_urls": [
-    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/t/v/x/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzsas5pqjd.jpeg?q=90",
-    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/4/v/9/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzpsj2mhyt.jpeg?q=90",
-    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/6/p/r/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdz9gqvgv8z.jpeg?q=90",
-    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/y/e/9/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzhs8vpm3h.jpeg?q=90",
-    "https://rukminim2.flixcart.com/image/1158/1158/xif0q/router/h/u/k/archer-c50-ac1200-wireless-dual-band-tp-link-original-imahfbdzwsukbttr.jpeg?q=90"
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/e/l/s/-original-imahg4z3hyyb3zpf.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/2/n/t/-original-imahg4z3azqbghfy.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/x/6/e/-original-imahg4z3w8uzpghk.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/9/r/d/-original-imahg4z3dgbnspzw.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/j/v/m/-original-imahg4z3fkq5kdnf.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/n/c/i/-original-imahg4z3ypsf8s3a.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/h/u/a/-original-imahg4z3beefyt2u.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/a/s/y/-original-imahg4z3qdegakau.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/n/7/h/-original-imahg4z3dcehwmxm.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/1/z/c/-original-imahg4z3bpubrrkh.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/y/v/0/-original-imahg4z3qxh5uhyn.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/o/s/f/-original-imahg4z3nzwhvekb.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/p/h/e/-original-imahg4z3rtergetj.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/o/x/h/-original-imahg4z3p2bt8jhz.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/6/t/6/-original-imahg4z3bjxefzph.jpeg?q=90",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/m/d/e/-original-imahg4z35gkvpp2k.jpeg?q=90",
+    "https://static-assets-web.flixcart.com/batman-returns/batman-returns/p/images/fk-default-image-e76ce0.png",
+    "https://rukminim2.flixcart.com/image/1200/1200/xif0q/television/i/d/1/-original-imahg4z3qec34ye9.jpeg?q=90"
   ],
-  "description": "High-speed TP-Link Archer C50 AC1200 dual-band WiFi router designed for smooth streaming, gaming, video calls, and multi-device home networking with reliable coverage and stable performance.",
+  "description": "realme TechLife 32-inch QLED Smart Google TV featuring HD Ready resolution, Google TV OS, Dolby Audio, vibrant QLED visuals, and smart connectivity for everyday entertainment." ,
   "specifications": [
     {
-      "label": "WiFi Standard",
-      "value": "802.11ac"
+      "label": "Screen Size",
+      "value": "32-inch (80 cm)"
     },
     {
-      "label": "Speed",
-      "value": "Up to 1200 Mbps"
+      "label": "Display Type",
+      "value": "QLED"
     },
     {
-      "label": "Bands",
-      "value": "2.4 GHz & 5 GHz Dual Band"
+      "label": "Resolution",
+      "value": "HD Ready (1366 × 768)"
     },
     {
-      "label": "Antennas",
-      "value": "4 External Antennas"
+      "label": "Operating System",
+      "value": "Google TV"
     },
     {
-      "label": "Ports",
-      "value": "Ethernet LAN/WAN Ports"
+      "label": "Refresh Rate",
+      "value": "60 Hz"
     },
     {
-      "label": "Security",
-      "value": "WPA/WPA2 Encryption"
+      "label": "Audio Output",
+      "value": "26 W"
     },
     {
-      "label": "Usage",
-      "value": "Broadband & Fiber Internet"
+      "label": "Connectivity",
+      "value": "3 HDMI, 2 USB, WiFi, Bluetooth"
     }
   ],
   "faqs": [
     {
-      "question": "Does this router support dual-band WiFi?",
-      "answer": "Yes, it supports both 2.4 GHz and 5 GHz bands."
+      "question": "Does this TV support Google TV?",
+      "answer": "Yes, it runs on the Google TV operating system."
     },
     {
-      "question": "Is this router suitable for gaming and streaming?",
-      "answer": "Yes, AC1200 speed is suitable for HD streaming and online gaming."
+      "question": "Does it have Bluetooth connectivity?",
+      "answer": "Yes, the TV supports Bluetooth connectivity."
     },
     {
-      "question": "Can multiple devices connect at the same time?",
-      "answer": "Yes, the router supports multiple connected devices efficiently."
+      "question": "How many HDMI ports are available?",
+      "answer": "It comes with 3 HDMI ports."
     },
     {
-      "question": "Does it work with fiber broadband connections?",
-      "answer": "Yes, it supports broadband and fiber internet setups."
+      "question": "Is this a QLED television?",
+      "answer": "Yes, it features a QLED display panel for enhanced colors and contrast."
     }
   ]
 }
