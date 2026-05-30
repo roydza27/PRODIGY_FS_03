@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { sellerService } from "./seller.service";
 import { AppError } from "@/utils/AppError";
-import { updateSellerSettings } from "./seller.service";
 
 // User: Apply to become a seller
 export const handleApplyForSeller = async (
