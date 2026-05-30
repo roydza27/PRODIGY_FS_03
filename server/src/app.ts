@@ -14,12 +14,31 @@ import { errorHandler } from "@/middlewares/error.middleware";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  })
-);
+// Look for CLIENT_URL env string, split it by commas, or fallback to localhost
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",")
+  : ["http://localhost:5173"];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow server-to-server or tools like Postman (no origin header)
+    if (!origin) return callback(null, true);
+    
+    const isAllowedDomain = allowedOrigins.includes(origin);
+    const isVercelPreview = 
+      process.env.NODE_ENV === "production" && origin.endsWith(".vercel.app");
+
+    // If it matches our allowed origins list OR it's a Vercel preview branch, let it through
+    if (isAllowedDomain || isVercelPreview) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Blocked by CORS policy.`));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.use(express.json());
 
