@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 
-import authRoutes from "@/modules/auth/auth.routes";
+import authRoutes from "./modules/auth/auth.routes";
 import productRoutes from "./modules/product/product.routes";
 import cartRoutes from "@/modules/cart/cart.routes";
 import orderRoutes from "./modules/orders/order.routes";

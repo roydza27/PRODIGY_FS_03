@@ -11,6 +11,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "_moduleAliases": {
+    "@": "dist"
+  },
   "dependencies": {
     "axios": "^1.16.1",
     "bcrypt": "^6.0.0",
@@ -19,9 +22,11 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "module-alias": "^2.3.4",
     "mongodb": "^7.2.0",
     "mongoose": "^9.6.2",
     "nodemailer": "^8.0.9",
+    "tsconfig-paths": "^4.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
