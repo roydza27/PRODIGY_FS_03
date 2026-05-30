@@ -114,7 +114,8 @@ export default function SellerApplicationPage() {
 
   return (
     <div className="min-h-screen bg-[#111113]/95 px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
-      <div className="mx-auto max-w-7xl space-y-6">
+      {/* FIXED: Changed trailing 'text' typo utility to explicit 'text-left' alignment */}
+      <div className="mx-auto max-w-7xl space-y-6 text-left">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-zinc-400">
             <Info className="h-4 w-4 text-[#DB4444]" />
