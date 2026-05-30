@@ -56,7 +56,7 @@ export async function getShipmentByIdController(
   next: NextFunction
 ) {
   try {
-    const shipment = await getShipmentById(req.params.id);
+    const shipment = await getShipmentById(String(req.params.id));
 
     if (!shipment) {
       return res.status(404).json({
@@ -82,7 +82,7 @@ export async function updateShipmentController(
   try {
     const parsed = updateShipmentSchema.parse(req.body);
 
-    const shipment = await updateShipment(req.params.id, parsed);
+    const shipment = await updateShipment(String(req.params.id), parsed);
 
     return res.json({
       success: true,
@@ -100,10 +100,12 @@ export async function updateShipmentStatusController(
   next: NextFunction
 ) {
   try {
-    const parsed = updateShipmentStatusSchema.parse(req.body);
+    // 1. Cast the zod inference output safely so TypeScript knows its fields
+    const parsed = updateShipmentStatusSchema.parse(req.body) as { status: any };
 
+    // 2. Ensure the ID is explicitly modified to a plain string
     const shipment = await updateShipmentStatus(
-      req.params.id,
+      String(req.params.id),
       parsed.status
     );
 

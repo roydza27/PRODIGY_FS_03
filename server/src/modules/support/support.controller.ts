@@ -54,7 +54,7 @@ export async function getSupportTicketByIdController(
   next: NextFunction
 ) {
   try {
-    const ticket = await getSupportTicketById(req.params.id);
+    const ticket = await getSupportTicketById(String(req.params.id));
 
     if (!ticket) {
       return res.status(404).json({
@@ -79,7 +79,7 @@ export async function updateSupportTicketStatusController(
 ) {
   try {
     const parsed = updateSupportTicketStatusSchema.parse(req.body);
-    const ticket = await updateSupportTicketStatus(req.params.id, parsed.status);
+    const ticket = await updateSupportTicketStatus(String(req.params.id), parsed.status);
 
     return res.json({
       success: true,

@@ -16,7 +16,6 @@ import {
   handleGetProductReviewState,
   handleAddProductReview,
 } from "./product.controller";
-import { protect } from "@/middlewares/auth.middleware";
 
 import { protect, authorizeRoles } from "@/middlewares/auth.middleware";
 import { validateBody } from "@/middlewares/validateBody.middleware";

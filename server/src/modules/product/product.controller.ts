@@ -285,7 +285,7 @@ export async function handleGetProductReviews(
   next: NextFunction
 ) {
   try {
-    const reviews = await getProductReviews(req.params.id);
+    const reviews = await getProductReviews(String(req.params.id));
 
     return res.json({
       success: true,
@@ -310,7 +310,7 @@ export async function handleGetProductReviewState(
     }
 
     const canReview = await canUserReviewProduct(
-      req.params.id,
+      String(req.params.id),
       req.user.userId
     );
 
@@ -339,7 +339,7 @@ export async function handleAddProductReview(
     const parsed = createProductReviewSchema.parse({ body: req.body });
 
     const product = await addProductReview(
-      req.params.id,
+      String(req.params.id),
       req.user.userId,
       parsed.body
     );
