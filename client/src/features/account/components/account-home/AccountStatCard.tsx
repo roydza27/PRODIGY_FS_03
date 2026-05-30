@@ -1,12 +1,14 @@
 import type { AccountHomeStat } from "../../types/account-home.types";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { LayoutDashboard } from "lucide-react"; // Import a fallback icon
 
 type Props = {
   stat: AccountHomeStat;
 };
 
 export default function AccountStatCard({ stat }: Props) {
-  const Icon = stat.icon;
+  // FIX: If stat.icon is undefined, fallback to LayoutDashboard so it doesn't crash
+  const Icon = stat.icon || LayoutDashboard;
 
   return (
     <Card className="border-white/10 bg-[#111113] text-white shadow-xl shadow-black/20">

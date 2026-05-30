@@ -91,7 +91,7 @@ export default function AccountBecomeSellerPage() {
 
   return (
     <div className="min-h-screen bg-[#111113]/95 px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-10">
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6 text-left">
         <BecomeSellerHeader
           title="Become a Seller"
           description="Apply to open your own storefront on LocalStore. Once approved, you will unlock the seller dashboard and start managing products."
