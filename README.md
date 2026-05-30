@@ -68,6 +68,12 @@ GitHub natively streams video files right inside the Markdown player. Look at th
 
 ---
 
+## 🔗 Live Deployment
+
+* **⚡ Live Storefront Link:** [Live_Demo_Link](https://zyrastore-qijer8bgu-roydza062-gmailcoms-projects.vercel.app)
+
+---
+
 ## ✨ Overview
 
 This project is a production-ready, full-stack multi-vendor e-commerce platform. Designed with performance, scalability, and developer experience in mind, it utilizes a modular, feature-based architecture on the client and a clean, service-oriented architecture on the backend.
