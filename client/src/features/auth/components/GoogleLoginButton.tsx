@@ -20,7 +20,7 @@ export default function GoogleLoginButton() {
         setSession({
           user: data.user,
           token: data.token,
-          remember: true, // Auto-remember social connections
+          remember: false, // Auto-remember social connections
         });
 
         // Match your existing routing permissions engine

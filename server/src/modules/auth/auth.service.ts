@@ -4,7 +4,6 @@ import { User } from "./auth.model";
 import type { RegisterInput } from "./auth.validation";
 import axios from "axios";
 import crypto from "crypto";
-import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 
 type LoginInput = {
@@ -88,11 +87,14 @@ export async function loginWithGoogle(accessToken: string) {
   }
 
   try {
-    // 1. Validate the frontend access token securely directly with Google's endpoint API
-    const googleUserResponse = await axios.get(
-      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`
-    );
+    // 1. Detect token type and determine the correct Google validation endpoint
+    // Modern frontend SDKs often pass an ID Token (JWT) instead of an Access Token
+    const isIdToken = accessToken.startsWith("eyJ");
+    const googleUrl = isIdToken
+      ? `https://oauth2.googleapis.com/tokeninfo?id_token=${accessToken}`
+      : `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`;
 
+    const googleUserResponse = await axios.get(googleUrl);
     const { sub: googleId, name, email } = googleUserResponse.data;
 
     if (!email) {
@@ -122,7 +124,7 @@ export async function loginWithGoogle(accessToken: string) {
       });
     }
 
-    // 4. Issue standard platform authorization JWT session signature tokens matching your architecture
+    // 4. Issue standard platform authorization JWT session signature tokens
     const token = jwt.sign(
       {
         userId: user._id,
@@ -143,10 +145,10 @@ export async function loginWithGoogle(accessToken: string) {
     };
 
     return { user: safeUser, token };
-  } catch (error) {
-    throw new Error(
-      error instanceof Error ? error.message : "Google identity authentication processing failure"
-    );
+  } catch (error: any) {
+    // Dig out the explicit reason Google rejected the handshake if an Axios error occurs
+    const googleErrorReason = error.response?.data?.error_description || error.response?.data?.error || error.message;
+    throw new Error(`Google identity authentication processing failure: ${googleErrorReason}`);
   }
 }
 

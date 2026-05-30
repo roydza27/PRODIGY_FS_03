@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 
 import authRoutes from "@/modules/auth/auth.routes";
-import employeeRoutes from "@/modules/employee/employee.routes";
 import productRoutes from "./modules/product/product.routes";
 import cartRoutes from "@/modules/cart/cart.routes";
 import orderRoutes from "./modules/orders/order.routes";
@@ -17,10 +16,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
-)
+);
 
 app.use(express.json());
 
@@ -31,7 +30,6 @@ app.get("/", (_req, res) => {
 
 // API routes
 app.use("/api/auth", authRoutes);
-app.use("/api/employees", employeeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);

@@ -74,29 +74,35 @@ export async function login(req: Request, res: Response) {
 
 export async function googleLogin(req: Request, res: Response) {
   try {
-    const { token } = req.body;
-    if (!token) {
+    // 1. Alias 'token' to 'googleToken' to avoid naming conflicts with your own JWT
+    const { token: googleToken } = req.body;
+    
+    if (!googleToken) {
       return res.status(400).json({
         success: false,
         message: "Google access token parameter is required",
       });
     }
 
-    const result = await loginWithGoogle(token);
+    // 2. Explicitly destructure the service result
+    const { user, token: platformToken } = await loginWithGoogle(googleToken);
 
+    // 3. Return an explicit payload so anyone reading this code knows exactly what goes back
     return res.status(200).json({
       success: true,
       message: "Google identity mapping completed successfully",
-      ...result,
+      user,
+      token: platformToken, // Your freshly generated app JWT
     });
+    
   } catch (error) {
-    return res.status(500).json({
+    // 4. Changed to 401/400 range since authentication failures are client/third-party issues, not 500 server crashes
+    return res.status(401).json({
       success: false,
-      message: error instanceof Error ? error.message : "Something went wrong",
+      message: error instanceof Error ? error.message : "Google authentication failed",
     });
   }
 }
-
 export async function forgotPassword(req: Request, res: Response) {
   try {
     const { email } = req.body;
