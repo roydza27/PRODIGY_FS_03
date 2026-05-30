@@ -1,6 +1,13 @@
 <div align="center">
+  <img src="https://img.shields.io/badge/Status-Live_Production-44BB44?style=for-the-badge" alt="Production Status" />
+  <br />
+  <br />
   <h1>🛍️ Zyntra E-Commerce Platform</h1>
-  <p>A modern, full-stack platform featuring Multi-Vendor support, role-based access control, and a scalable feature-driven architecture.</p>
+  <p><strong>A modern, production-ready full-stack Multi-Vendor marketplace ecosystem.</strong> Engineered with role-based access controls, robust architectural layers, and a feature-slice client strategy.</p>
+
+  <p>
+    <a href="https://zyntra-store.onrender.com"><img src="https://img.shields.io/badge/Live_Demo-🔗_Visit_Zyntra-646CFF?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo" /></a>
+  </p>
 
   <p>
     <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-blue.svg?style=flat&logo=react" alt="React 19" /></a>
@@ -12,11 +19,7 @@
   </p>
 </div>
 
-<br />
-
-> **Note:** Provide screenshots of your Home Page, Admin Dashboard, and Seller Dashboard here.
-> 
-> *[Placeholder for Application Screenshots]*
+---
 
 ## 📱 Application Preview
 
@@ -62,6 +65,8 @@ GitHub natively streams video files right inside the Markdown player. Look at th
     </td>
   </tr>
 </table>
+
+---
 
 ## ✨ Overview
 
