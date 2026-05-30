@@ -6,8 +6,6 @@ import { BellIcon, SearchIcon, Check, Circle } from "lucide-react";
 
 import { Separator } from "@/shared/components/ui/separator";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
-import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,

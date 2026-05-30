@@ -16,12 +16,8 @@ import { RowDetailsOverlay } from "@/shared/components/data-table/RowDetailsOver
 import { adminProductService } from "../services/product.service";
 import type { Product } from "@/features/products/types/product.types";
 import {
-  AlertTriangle,
-  BarChart3,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
-  Warehouse,
   GripVertical,
   Package,
   Layers,

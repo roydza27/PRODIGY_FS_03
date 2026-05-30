@@ -22,7 +22,6 @@ import {
   IconFileAnalytics,
   IconUserCog,
   IconCreditCard,
-  IconMapPin,
   IconTrendingUp,
   IconAlertCircle,
   IconShoppingBag,

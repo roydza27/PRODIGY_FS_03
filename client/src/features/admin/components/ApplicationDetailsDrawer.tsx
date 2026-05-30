@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Mail, Phone, Store, FileText, CalendarDays, BadgeCheck, Landmark, CheckCircle, XCircle } from "lucide-react"
+import { Mail, Phone, Store, FileText, CalendarDays, Landmark, CheckCircle, XCircle } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"

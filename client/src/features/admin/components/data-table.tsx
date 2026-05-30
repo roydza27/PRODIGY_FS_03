@@ -33,8 +33,6 @@ import {
   type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table"
-import { toast } from "sonner"
-import { z } from "zod"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Badge } from "@/shared/components/ui/badge"
@@ -58,7 +56,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu"
-import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
 import {
   Select,
@@ -84,19 +81,13 @@ import {
 } from "@/shared/components/ui/tabs"
 import {
   GripVerticalIcon,
-  CircleCheckIcon,
-  LoaderIcon,
   EllipsisVerticalIcon,
   Columns3Icon,
   ChevronDownIcon,
-  PlusIcon,
   ChevronsLeftIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronsRightIcon,
-  Mail,
-  Building2,
-  BriefcaseBusiness
+  ChevronsRightIcon
 } from "lucide-react"
 import type { DataTableProps, Employee } from "../types/employee.types"
 

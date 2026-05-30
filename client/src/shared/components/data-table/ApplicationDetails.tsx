@@ -5,12 +5,9 @@ import {
   Store, 
   FileText, 
   CalendarDays, 
-  Landmark, 
-  CheckCircle, 
-  XCircle 
+  Landmark 
 } from "lucide-react"
 import { Badge } from "@/shared/components/ui/badge"
-import { Button } from "@/shared/components/ui/button"
 import { Textarea } from "@/shared/components/ui/textarea"
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar"
 import { RowDetailsOverlay } from "@/shared/components/data-table/RowDetailsOverlay"

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { IconInnerShadowTop, IconSparkles } from "@tabler/icons-react";
+import { IconSparkles } from "@tabler/icons-react";
 import { Store } from "lucide-react";
 
 import { SidebarNavItem } from "@/shared/components/layout/sidebar-nav-item";

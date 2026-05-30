@@ -8,7 +8,6 @@ import { IconMessageCircle } from "@tabler/icons-react";
 import {
   BookOpen,
   CheckCircle2,
-  Clock3,
   FileText,
   Headphones,
   LifeBuoy,
@@ -18,8 +17,6 @@ import {
   Sparkles,
   Tag,
   Truck,
-  Upload,
-  UserRound,
   Workflow,
 } from "lucide-react";
 

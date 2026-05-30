@@ -11,14 +11,12 @@ import {
   KeyRound,
   Bell,
   Store,
-  Lock,
   Globe,
   Database,
   CircleAlert,
   CircleCheckBig,
   Sparkles,
   Users,
-  CreditCard,
 } from "lucide-react";
 
 type ToggleState = {

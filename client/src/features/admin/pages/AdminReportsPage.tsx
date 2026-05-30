@@ -12,7 +12,6 @@ import {
   ShieldAlert,
   ShoppingBag,
   Sparkles,
-  TrendingUp,
   Wallet,
 } from "lucide-react";
 

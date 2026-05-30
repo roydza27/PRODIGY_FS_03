@@ -1,4 +1,4 @@
-import { Download, FileText, Search } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";

@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Separator } from "@/shared/components/ui/separator";
 import AdminPageShell from "../components/AdminPageShell";
 import AnalyticsStatCard from "../components/AnalyticsStatCard";
 import RevenueChart from "../components/RevenueChart";
@@ -14,7 +13,6 @@ import {
   CircleDollarSign,
   Download,
   RefreshCw,
-  ShieldAlert,
   ShoppingBag,
   Sparkles,
   Truck,

@@ -1,4 +1,3 @@
-// src/app/stores/auth.store.ts
 import { create } from "zustand";
 import axios from "axios";
 import { getMe } from "@/features/auth/services/auth.service";

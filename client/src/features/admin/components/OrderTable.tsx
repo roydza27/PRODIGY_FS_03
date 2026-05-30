@@ -11,7 +11,6 @@ import {
   CheckCircle2 
 } from "lucide-react";
 
-import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { formatPrice } from "@/features/products/utils/product.helpers";

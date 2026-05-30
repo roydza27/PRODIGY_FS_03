@@ -2,24 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import AdminPageShell from "../components/AdminPageShell";
 import ShipmentTable from "../components/ShipmentTable";
 import type { Shipment, ShipmentStatus } from "../services/shipment.service";
 import { formatPrice } from "@/features/products/utils/product.helpers";
 import { shipmentService } from "../services/shipment.service";
 import {
-  Filter,
   PackageCheck,
   RefreshCw,
-  Search,
-  Sparkles,
   Truck,
   Warehouse,
   CircleCheck,
   Plus,
-  User,
   ClipboardList,
   AlertCircle,
 } from "lucide-react";

@@ -1,16 +1,14 @@
 import { useSearchParams } from "react-router-dom";
-import { IconDiscount2, IconSparkles, IconStar, IconTag, IconTruck } from "@tabler/icons-react";
+import { IconDiscount2, IconSparkles, IconTag, IconTruck } from "@tabler/icons-react";
 
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
 } from "@/shared/components/ui/sidebar";
 import { Button } from "@/shared/components/ui/button";
 import ProductSearchBar from "./ProductSearchBar";
 import ProductSortSelect from "./ProductSortSelect";
-import FilterChip from "./FilterChip";
 
 type SortValue = "newest" | "price-asc" | "price-desc" | "name-asc";
 type PriceValue = "" | "budget" | "mid" | "premium";

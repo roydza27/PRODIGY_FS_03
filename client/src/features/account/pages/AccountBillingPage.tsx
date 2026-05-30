@@ -7,7 +7,6 @@ import {
   Download,
   EllipsisVertical,
   Landmark,
-  MapPin,
   Plus,
   ShieldCheck,
   Smartphone,

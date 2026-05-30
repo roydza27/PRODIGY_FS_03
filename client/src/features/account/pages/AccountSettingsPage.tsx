@@ -13,7 +13,6 @@ import {
   MapPin,
   Package,
   Plus,
-  Save,
   ShieldCheck,
   Smartphone,
   Star,

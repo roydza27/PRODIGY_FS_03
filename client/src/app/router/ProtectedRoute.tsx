@@ -1,6 +1,5 @@
 // src/app/router/ProtectedRoute.tsx
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/app/providers/AuthProvider";
 import { useAuthStore } from "../store/auth.store";
 
 type ProtectedRouteProps = {

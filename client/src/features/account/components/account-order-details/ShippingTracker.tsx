@@ -5,7 +5,6 @@ import {
   Clock3,
   CreditCard,
   House,
-  Package,
   ShieldCheck,
   Truck,
   XCircle,

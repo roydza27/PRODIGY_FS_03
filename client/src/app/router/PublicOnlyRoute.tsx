@@ -1,6 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/app/providers/AuthProvider";
-import { useAuthStore } from "../store/auth.store";
+import { useAuthStore } from "@/app/store/auth.store";
 
 export default function PublicOnlyRoute() {
   const user = useAuthStore((state) => state.user);

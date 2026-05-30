@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
 import AdminPageShell from "../components/AdminPageShell";
 import CustomerTable from "../components/CustomerTable";
 import type { AdminCustomer } from "../services/customer.service";
 import { getCustomers } from "../services/customer.service";
-import { formatPrice } from "@/features/products/utils/product.helpers";
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);

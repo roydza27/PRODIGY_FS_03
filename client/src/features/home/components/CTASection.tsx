@@ -1,4 +1,4 @@
-import { ArrowRight, Headphones, ShoppingCart, Store, ShieldCheck, Clock } from "lucide-react";
+import { ArrowRight, Headphones, ShoppingCart, Store, Clock } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";

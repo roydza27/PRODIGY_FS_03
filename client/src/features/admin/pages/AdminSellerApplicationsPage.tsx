@@ -1,9 +1,5 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
-
-import { Input } from "@/shared/components/ui/input";
-import { Button } from "@/shared/components/ui/button";
 
 import { SellerApplicationTable } from "../components/SellerApplicationTable";
 import { ApplicationDetailsDrawer } from "../components/ApplicationDetailsDrawer";

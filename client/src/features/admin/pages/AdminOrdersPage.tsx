@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
 import AdminPageShell from "../components/AdminPageShell";
 import OrderTable, { type AdminOrder } from "../components/OrderTable";
 import type { AdminOrderStatus } from "../components/OrderStatusBadge";
-import { formatPrice } from "@/features/products/utils/product.helpers";
 import {
   EmptyState,
   ErrorState,

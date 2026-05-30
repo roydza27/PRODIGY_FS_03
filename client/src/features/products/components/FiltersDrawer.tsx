@@ -13,7 +13,6 @@ import {
 } from "@/shared/components/ui/sheet";
 
 import FilterChip from "./FilterChip";
-import { se } from "date-fns/locale";
 
 const categories = [
   { label: "All", value: "" },

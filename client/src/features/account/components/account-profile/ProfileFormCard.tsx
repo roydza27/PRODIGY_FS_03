@@ -1,4 +1,4 @@
-import { User, Camera, Package, Mail, Smartphone } from "lucide-react"; // Added missing icons
+import { Camera } from "lucide-react"; // Added missing icons
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator"; // ADDED IMPORT
 import ProfileFormField from "./ProfileFormField";

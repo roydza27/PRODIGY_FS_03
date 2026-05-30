@@ -6,7 +6,6 @@ import type { Order } from "../types/order.types";
 import { formatPrice } from "@/features/products/utils/product.helpers";
 import {
   CheckCircle2,
-  ChevronRight,
   Clock3,
   Package2,
   Search,
